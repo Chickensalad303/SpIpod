@@ -48,6 +48,8 @@ git clone https://github.com/bablokb/pi-btaudio.git
 cd pi-btaudio
 sudo tools/install
 ```
+# Clickwheel setup
+NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board\
 5. Install PiGPIO for clickwheel
 ```
 wget https://github.com/joan2937/pigpio/archive/master.zip
@@ -56,6 +58,7 @@ cd pigpio-master
 make
 sudo make install
 ```
+run `gcc -Wall -pthread -o click click.c -lpigpio -lrt ` to compole click.c, then `sudo ./click &` to test
 
 6. Setup Spotify API
 
