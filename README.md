@@ -48,7 +48,7 @@ git clone https://github.com/bablokb/pi-btaudio.git
 cd pi-btaudio
 sudo tools/install
 ```
-5. Install PiGPIO
+5. Install PiGPIO for clickwheel
 ```
 wget https://github.com/joan2937/pigpio/archive/master.zip
 unzip master.zip
