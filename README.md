@@ -1,4 +1,8 @@
+## Reminder comment out framebuffer part of /boot/config.txt, this is only used for testing via vnc viewer
+I'm using a ipod classic from 2004 (A1059)
+
 # sPot
+This is a Fork of the [Spotify Ipod](https://github.com/dupontgu/retro-ipod-spotify-client) by Guy Dupont
 
 This code is meant to accompany [this project](https://hackaday.io/project/177034-spot-spotify-in-a-4th-gen-ipod-2004) in which a Spotify client is built into an iPod "Classic" from 2004. Everything is meant to run on a Raspberry Pi Zero W.
 
@@ -6,12 +10,76 @@ Since we are using the lite version of raspbian, some extra packages need to be 
 
 # Instructions
 
-1. Install updates 
+## 1. Install updates 
 
 ```
 sudo apt-get update 
 sudo apt-get upgrade
 ```
+
+# Clickwheel setup
+NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board
+The schematics for clickwheel wiring is at the bottom
+
+Install PiGPIO for clickwheel
+```
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+```
+run `gcc -Wall -pthread -o click click.c -lpigpio -lrt ` to compole click.c, then `sudo ./click &` to test
+
+# Display setup
+I used a 2 inch model waveshare ST7789V display
+wiring for display also below.
+
+used [this guide](http://rsflightronics.com/spotifypod) which links to [this solution on github](https://github.com/dupontgu/retro-ipod-spotify-client/issues/23)
+
+basically this is how to setup:
+Edit `/boot/config.txt` & add:
+```
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt=320 240 60 1 0 0 0
+hdmi_force_hotplug=1
+```
+restart pi, then
+```
+sudo apt install cmake git
+cd ~
+git clone https://github.com/juj/fbcp-ili9341.git
+cd fbcp-ili9341
+```
+then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 360`
+then type
+```
+mkdir build
+cd /build
+```
+Depending on what gpio pins you've soldered (refer to pinout below)  to `TFT_DATA_CONTROL` and `TFT_RESET_PIN` might be different.
+for my case I used:
+`cmake -DST7789=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=30 -DSTATISTICS=0 -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON -DUSE_DMA_TRANSFERS=OFF ..`
+
+in case you need to flip the screen, include this option before the two dots at the end: `-DDISPLAY_ROTATE_180_DEGREES=ON`
+afterwards run `sudo make -j`
+you can now test the driver in that same folder with `sudo ./fbcp-ili9341`
+
+but since the driver should start automatically on boot we have to do one last change.
+Open `/etc/rc.local` with a text editor with sudo privileges:
+`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim
+
+Add these lines before `exit` in the file:
+```
+# Start display driver
+/home/pi/fbcp-ili9341/build/fbcp-ili9341 &
+```
+
+thats it, now the driver should be installed and run on boot.
+
+
+
 2. Install Required Packages.
 
 Installation for python3-pip, raspotify, python3-tk, openbox
