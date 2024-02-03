@@ -62,13 +62,13 @@ Depending on what gpio pins you've soldered (refer to pinout below)  to `TFT_DAT
 for my case I used:
 `cmake -DST7789=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=30 -DSTATISTICS=0 -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON -DUSE_DMA_TRANSFERS=OFF ..`
 
-in case you need to flip the screen, include this option before the two dots at the end: `-DDISPLAY_ROTATE_180_DEGREES=ON`
-afterwards run `sudo make -j`
+in case you need to flip the screen, include this option before the two dots at the end: `-DDISPLAY_ROTATE_180_DEGREES=ON`\
+afterwards run `sudo make -j`\
 you can now test the driver in that same folder with `sudo ./fbcp-ili9341`
 
 but since the driver should start automatically on boot we have to do one last change.
-Open `/etc/rc.local` with a text editor with sudo privileges:
-`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim
+Open `/etc/rc.local` with a text editor with sudo privileges:\
+`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim\
 
 Add these lines before `exit` in the file:
 ```
