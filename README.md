@@ -56,7 +56,7 @@ wiring for display also below.
 used [this guide](http://rsflightronics.com/spotifypod) which links to [this solution on github](https://github.com/dupontgu/retro-ipod-spotify-client/issues/23)
 
 basically this is how to setup:\
-Edit `/boot/config.txt` & uncomment `dtoverlay=vc4-kms-v3d` & add:
+Edit `/boot/config.txt` & comment `dtoverlay=vc4-kms-v3d` & add:
 ```
 hdmi_group=2
 hdmi_mode=87
