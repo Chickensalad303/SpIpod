@@ -52,7 +52,7 @@ cd ~
 git clone https://github.com/juj/fbcp-ili9341.git
 cd fbcp-ili9341
 ```
-then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 360`
+then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 360` in line 20\
 then type
 ```
 mkdir build
