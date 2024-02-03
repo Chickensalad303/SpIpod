@@ -172,7 +172,7 @@ DEVICE_TYPE="smartphone"
 # Wiring
 
 Here is the wiring of the hardware, as of revision 1. Note that the pin numbers correlate to those referenced in [click.c](./clickwheel/click.c)
-<br>
+\
 RPI Zero 2 W pinout
 ![RPI Zero 2 W Pinout](./.docs/Untitled.png)
 Clickwheel wiring
