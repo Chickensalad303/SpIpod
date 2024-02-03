@@ -68,7 +68,7 @@ you can now test the driver in that same folder with `sudo ./fbcp-ili9341`
 
 but since the driver should start automatically on boot we have to do one last change.
 Open `/etc/rc.local` with a text editor with sudo privileges:\
-`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim\
+`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim
 
 Add these lines before `exit` in the file:
 ```
