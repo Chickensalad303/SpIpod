@@ -10,7 +10,7 @@ Since we are using the lite version of raspbian, some extra packages need to be 
 
 # Instructions
 
-## 1. Install updates 
+## Install updates 
 
 ```
 sudo apt-get update 
