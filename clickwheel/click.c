@@ -1,4 +1,4 @@
-// To compile on the pi (after installing pigpio):
+// To compile on the pi (after installing pigpio in parent dir):
 // gcc -Wall -pthread -o click click.c -lpigpio -lrt
 
 #include <pigpio.h>
