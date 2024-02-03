@@ -5,6 +5,15 @@ import threading
 import time
 import json
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+clientID = os.getenv("clientID")
+clientSecret = os.getenv("clientSecret")
+redirectURI = os.getenv("redirectURI")
+
+
 class UserDevice():
     __slots__ = ['id', 'name', 'is_active']
     def __init__(self, id, name, is_active):
@@ -99,7 +108,9 @@ scope = "user-follow-read," \
 
 DATASTORE = datastore.Datastore()
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    scope=scope,
+    client_id=clientID, client_secret=clientSecret, redirect_uri=redirectURI))
 
 
 pageSize = 50
@@ -174,7 +185,8 @@ def refresh_devices():
     results = sp.devices()
     DATASTORE.clearDevices()
     for _, item in enumerate(results['devices']):
-        if "Spotifypod" in item['name']:
+        print(item["name"])
+        if "Spotifypod" in item['name'] or "raspotify (raspberrypi)" in item["name"]:
             print(item['name'])
             device = UserDevice(item['id'], item['name'], item['is_active'])
             DATASTORE.setUserDevice(device)
