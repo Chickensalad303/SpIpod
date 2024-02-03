@@ -17,6 +17,24 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
+## install prerequisites
+```
+sudo apt install python-setuptools python3-setuptools
+
+sudo apt install python3-pip
+
+sudo apt-get install python3-tk 
+
+sudo apt-get install redis-server
+
+sudo apt-get install openbox
+
+sudo apt install xorg
+
+sudo apt-get install lightdm
+
+sudo apt-get install x11-xserver-utils
+```
 # Clickwheel setup
 NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board
 The schematics for clickwheel wiring is at the bottom
