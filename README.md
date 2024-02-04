@@ -19,7 +19,7 @@ sudo apt-get upgrade
 
 ## install prerequisites
 ```
-sudo apt install midori
+sudo apt-get install midori
 
 sudo apt-get install python-pip python-dev
 
