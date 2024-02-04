@@ -9,6 +9,7 @@ This code is meant to accompany [this project](https://hackaday.io/project/17703
 Since we are using the lite version of raspbian, some extra packages need to be installed:
 
 # Instructions
+### I have used python 3.9.2 idk if itll work with other versions
 
 ## Install updates 
 
