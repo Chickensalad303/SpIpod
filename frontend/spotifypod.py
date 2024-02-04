@@ -87,12 +87,15 @@ class tkinterApp(tk.Tk):
         # __init__ function for class Tk 
         tk.Tk.__init__(self, *args, **kwargs)
 
+        # Darwin is macos btw
         if (platform == 'darwin'):
             self.geometry("320x240")
             SCALE = 0.3
         else:
             self.attributes('-fullscreen', True)
-            SCALE = self.winfo_screenheight() / 930
+            # originally was divided with 930, for my screen 1000 works better
+            SCALE = self.winfo_screenheight() / 1000
+            print("Scale of App is: ", SCALE)
 
         LARGEFONT =("ChicagoFLF", int(72 * SCALE))
         MED_FONT =("ChicagoFLF", int(52 * SCALE))
