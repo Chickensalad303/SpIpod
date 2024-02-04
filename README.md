@@ -49,6 +49,11 @@ sudo apt-get install lightdm
 
 sudo apt-get install x11-xserver-utils
 ```
+then set redis-server to start on boot, which it does automatically but on some devices it don't 
+`sudo systemctl enable redis-server`
+
+
+
 # Clickwheel setup
 NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board
 The schematics for clickwheel wiring is at the bottom
@@ -140,8 +145,6 @@ sudo apt-get install x11-xserver-utils
 
 ```
 
-then set redis-server to start on boot, which it does automatically but on some devices it don't
-`sudo systemctl enable redis-server`
 
 3. Install Dependencies
 
