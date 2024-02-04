@@ -138,6 +138,10 @@ sudo apt-get install lightdm
 sudo apt-get install x11-xserver-utils
 
 ```
+
+then set redis-server to start on boot, which it does automatically but on some devices it don't
+`sudo systemctl enable redis-server`
+
 3. Install Dependencies
 
 ```
