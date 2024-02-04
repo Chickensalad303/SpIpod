@@ -91,7 +91,7 @@ class tkinterApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # Darwin is macos btw
-        if (platform == 'darwin' or distro.id() != "raspian"):
+        if (platform == 'darwin' or distro.id() != "raspbian"):
             self.geometry("320x240")
             SCALE = 0.3
         else:
