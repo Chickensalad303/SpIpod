@@ -13,7 +13,7 @@ from view_model import *
 from PIL import ImageTk, Image
 from sys import platform
 import os
-   
+import distro   
   
 LARGEFONT =("ChicagoFLF", 90) 
 MED_FONT =("ChicagoFLF", 70) 
@@ -91,7 +91,7 @@ class tkinterApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # Darwin is macos btw
-        if (platform == 'darwin'):
+        if (platform == 'darwin' or distro.id() != "raspian"):
             self.geometry("320x240")
             SCALE = 0.3
         else:
