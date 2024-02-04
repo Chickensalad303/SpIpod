@@ -1,8 +1,10 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from sys import platform
+import distro
 
-print(platform)
+
+print(distro.id())
 
 scope = "user-follow-read," \
         "user-library-read," \
