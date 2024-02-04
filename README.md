@@ -84,6 +84,9 @@ git clone https://github.com/juj/fbcp-ili9341.git
 cd fbcp-ili9341
 ```
 then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 360` in line 20\
+go edit `st7735r.cpp` and comment out the line starting with `SPI_TRANSFER` (around line 100) then add `SPI_TRANSFER(0x37, 0, 0);` & save
+
+
 then type
 ```
 mkdir build
