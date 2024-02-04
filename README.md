@@ -21,6 +21,14 @@ sudo apt-get upgrade
 ```
 sudo apt install midori
 
+sudo apt-get install python-pip python-dev
+
+sudo apt-get install python3-pip python-dev
+
+sudo apt-get install realvnc-vnc-server
+
+
+
 sudo apt install python-setuptools python3-setuptools
 
 sudo apt install python3-pip
