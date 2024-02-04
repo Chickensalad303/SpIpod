@@ -19,6 +19,8 @@ sudo apt-get upgrade
 
 ## install prerequisites
 ```
+sudo apt install midori
+
 sudo apt install python-setuptools python3-setuptools
 
 sudo apt install python3-pip
