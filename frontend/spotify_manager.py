@@ -161,11 +161,21 @@ def get_playlist_tracks(id):
     while(results['next']):
         for _, item in enumerate(results['items']):
             track = item['track']
-            tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
+            if track is None:
+                print("track is none, continuing")
+                continue
+            else:
+                #print(track["name"])
+                tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
         results = sp.next(results)
     for _, item in enumerate(results['items']):
         track = item['track']
-        tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
+        if track is None:
+            #print("track is none again, continue")
+            continue
+        else:
+            print(track["name"])
+            tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
     return tracks
 
 def get_album_tracks(id):
