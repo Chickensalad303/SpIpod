@@ -35,6 +35,9 @@ sudo apt install python3-pip
 
 sudo apt-get install python3-tk 
 
+sudo apt-get install python3-pil 
+sudp apt-get install python3-pil.imagetk
+
 sudo apt-get install redis-server
 
 sudo apt-get install openbox
