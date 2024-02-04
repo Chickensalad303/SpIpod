@@ -162,7 +162,7 @@ def get_playlist_tracks(id):
         for _, item in enumerate(results['items']):
             track = item['track']
             if track is None:
-                print("track is none, continuing")
+                #print("track is none, continuing")
                 continue
             else:
                 #print(track["name"])
@@ -176,6 +176,8 @@ def get_playlist_tracks(id):
         else:
             #print(track["name"])
             tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
+    tracks_len = len(tracks)
+    print(f"found {tracks_len} tracks inside a playlist")
     return tracks
 
 def get_album_tracks(id):
