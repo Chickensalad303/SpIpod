@@ -174,7 +174,7 @@ def get_playlist_tracks(id):
             #print("track is none again, continue")
             continue
         else:
-            print(track["name"])
+            #print(track["name"])
             tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
     return tracks
 
