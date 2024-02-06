@@ -198,7 +198,7 @@ def refresh_devices():
     DATASTORE.clearDevices()
     for _, item in enumerate(results['devices']):
         print(item["name"])
-        if "Spotifypod" in item['name'] or "raspotify (raspberrypi)" in item["name"]:
+        if "Spotifypod" in item['name'] or "raspotify" in item["name"]:
             print(item['name'])
             device = UserDevice(item['id'], item['name'], item['is_active'])
             DATASTORE.setUserDevice(device)
@@ -387,7 +387,10 @@ def get_now_playing_track(response = None):
     if not context:
         return now_playing
     if (context['type'] == 'playlist'):
+        # Same as below
         uri = context['uri']
+        print(uri)
+        #uri = track["album"]["uri"]
         playlist = DATASTORE.getPlaylistUri(uri)
         tracks = DATASTORE.getPlaylistTracks(uri)
         if (not playlist):
@@ -398,14 +401,22 @@ def get_now_playing_track(response = None):
         now_playing['track_total'] = len(tracks)
         now_playing['context_name'] = playlist.name
     elif (context['type'] == 'album'):
-        uri = context['uri']
+        # Use track["album"]["uri"] instead of context, since it updates 
+        # its value with every new song, meaning that if you create a
+        # queue on your phone, the now playing screen wont get stuck
+        # uri = context['uri']
+        uri = track["album"]["uri"]
         album = DATASTORE.getAlbumUri(uri)
         tracks = DATASTORE.getPlaylistTracks(uri)
         if (not album):
             album, tracks = get_album(uri.split(":")[-1])
             DATASTORE.setAlbum(album, tracks)
+        # print(track["album"]["external_urls"])
+        # print(track["album"]['uri'])
+        #print(track["uri"], "vs", uri)
+        #print('\n')
         now_playing['track_index'] = next(x for x, val in enumerate(tracks) 
-                                  if val.uri == track_uri) + 1
+                                 if val.uri == track_uri) + 1
         now_playing['track_total'] = len(tracks)
         now_playing['context_name'] = album.name
     return now_playing
