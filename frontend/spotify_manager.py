@@ -149,16 +149,14 @@ def get_playlist(id):
     results = sp.playlist(id) 
     #items = results["tracks"]["items"]
     #isNext = results["tracks"]["next"]
+    # this is a godsend: https://stackoverflow.com/a/39113522
 
     items = results["tracks"]["items"]
     tracks = []
     while results["tracks"]["next"]:
         results["tracks"] = sp.next(results["tracks"])
         items.extend(results["tracks"]["items"])
-    
-
-    #print(len(items))        
-        
+            
     for _, item in enumerate(items):
         track = item['track']
         
@@ -261,13 +259,6 @@ def refresh_data():
     results = sp.current_user_saved_tracks(limit=pageSize, offset=0)
     
     res = sp.current_user_saved_tracks(limit=pageSize, offset=0)
-    # tra = res["items"]
-
-    # while res["next"]:
-    #     print(res["items"][0]["track"]["name"])
-    #     res = sp.next(res)
-    #     tra.extend(res["items"])
-    # print("length is:", len(tra))
 
     while(results['next']):
         offset = results['offset']
