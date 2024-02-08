@@ -447,7 +447,7 @@ def get_now_playing_track(response = None):
         # catch with get_playlist() but with album uri
         # print(track["album"]["uri"])
         if (not playlist):
-            print("uri is:", uri)
+            #print("uri is:", uri)
             playlist, tracks = get_playlist(uri.split(":")[-1])
             DATASTORE.setPlaylist(playlist, tracks)
 
