@@ -429,39 +429,26 @@ def get_now_playing_track(response = None):
         'track_index': -1,
         'timestamp': time.time()
     }
+    notInPlaylist = False
     if not context:
         return now_playing
     if (context['type'] == 'playlist'):
-        # Same as below
         uri = context['uri']
-        #print(uri, "hello")
-        #uri = track["album"]["uri"]
         playlist = DATASTORE.getPlaylistUri(uri)
         tracks = DATASTORE.getPlaylistTracks(uri)
-        queue = sp.queue()
-        upcoming_track = queue["queue"][0]["external_urls"]
-        
-        #get_queue
-
-        #implement if get_playlist() using playlist uri error, 
-        # catch with get_playlist() but with album uri
-        # print(track["album"]["uri"])
         if (not playlist):
-            #print("uri is:", uri)
             playlist, tracks = get_playlist(uri.split(":")[-1])
             DATASTORE.setPlaylist(playlist, tracks)
 
-            # try:
-                # playlist, tracks = get_playlist(uri.split(":")[-1])
-            # except:
-                # uri = track["album"]["uri"]
-                # playlist, tracks = get_playlist(uri.split(":")[-1])
-        
-        now_playing['track_index'] = next(x for x, val in enumerate(tracks) 
-                                  if val.uri == track_uri) + 1
+        try:
+            now_playing['track_index'] = next(x for x, val in enumerate(tracks) 
+                                    if val.uri == track_uri) + 1
+        except:
+            # This makes performance worse & is jank but is the quickest solution
+            notInPlaylist = True
         now_playing['track_total'] = len(tracks)
         now_playing['context_name'] = playlist.name
-    elif (context['type'] == 'album'):
+    if (context['type'] == 'album' or notInPlaylist == True):
         # Use track["album"]["uri"] instead of context, since it updates 
         # its value with every new song, meaning that if you create a
         # queue on your phone, the now playing screen wont get stuck
@@ -472,14 +459,12 @@ def get_now_playing_track(response = None):
         if (not album):
             album, tracks = get_album(uri.split(":")[-1])
             DATASTORE.setAlbum(album, tracks)
-        # print(track["album"]["external_urls"])
-        # print(track["album"]['uri'])
-        #print(track["uri"], "vs", uri)
-        #print('\n')
+
         now_playing['track_index'] = next(x for x, val in enumerate(tracks) 
                                  if val.uri == track_uri) + 1
         now_playing['track_total'] = len(tracks)
         now_playing['context_name'] = album.name
+        notInPlaylist = False
     return now_playing
 
 def get_now_playing_episode(response = None):
