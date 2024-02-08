@@ -113,7 +113,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=clientID, client_secret=clientSecret, redirect_uri=redirectURI))
 
 
-pageSize = 50
+pageSize = 50 #50 is max
 has_internet = False
 
 def check_internet(request):
@@ -127,12 +127,47 @@ def check_internet(request):
         has_internet = False
     return result
 
+def get_queue():
+    results = sp.queue()
+    tracks = []
+    queue = results["queue"]
+    #print(results["queue"][0]["album"]["name"])
+    for _, item in enumerate(results["queue"]):
+        return
+        # print(len(results["queue"]))
+        # print(queue[_]["name"], queue[_]["artists"][0]["name"], queue[_]["album"]["name"], queue[_]["uri"])
+        #tracks.append(UserTrack(results["name"], results["artists"][0]["name"], results["album"]["name"], ["uri"]))
+
+
+
 def get_playlist(id):
     # TODO optimize query
-    results = sp.playlist(id)
+
+    # error here when starting program with playlist already being played
+    # on this device, then and only then will only load first 100 tracks, 
+    # because this function is only used whenn booting & refresh_data s called
+    results = sp.playlist(id) 
+    #items = results["tracks"]["items"]
+    #isNext = results["tracks"]["next"]
+
+    items = results["tracks"]["items"]
     tracks = []
-    for _, item in enumerate(results['tracks']['items']):
+    while results["tracks"]["next"]:
+        results["tracks"] = sp.next(results["tracks"])
+        items.extend(results["tracks"]["items"])
+    
+
+    #print(len(items))        
+        
+    for _, item in enumerate(items):
         track = item['track']
+        
+        # Why this is nescessary idk, but my playlist had an invisible
+        # track that was NoneType ??? 
+        if track == None:
+            #print("its none i guess, doesn't matter")
+            continue
+        #print("name: ", track["name"], "&", _)
         tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
     return (UserPlaylist(results['name'], 0, results['uri'], len(tracks)), tracks) # return playlist index as 0 because it won't have a idx parameter when fetching directly from Spotify (and we don't need it here anyway)
 
@@ -224,6 +259,16 @@ def parse_show(show):
 def refresh_data():
     DATASTORE.clear()
     results = sp.current_user_saved_tracks(limit=pageSize, offset=0)
+    
+    res = sp.current_user_saved_tracks(limit=pageSize, offset=0)
+    # tra = res["items"]
+
+    # while res["next"]:
+    #     print(res["items"][0]["track"]["name"])
+    #     res = sp.next(res)
+    #     tra.extend(res["items"])
+    # print("length is:", len(tra))
+
     while(results['next']):
         offset = results['offset']
         for idx, item in enumerate(results['items']):
@@ -389,13 +434,29 @@ def get_now_playing_track(response = None):
     if (context['type'] == 'playlist'):
         # Same as below
         uri = context['uri']
-        print(uri)
+        #print(uri, "hello")
         #uri = track["album"]["uri"]
         playlist = DATASTORE.getPlaylistUri(uri)
         tracks = DATASTORE.getPlaylistTracks(uri)
+        queue = sp.queue()
+        upcoming_track = queue["queue"][0]["external_urls"]
+        
+        #get_queue
+
+        #implement if get_playlist() using playlist uri error, 
+        # catch with get_playlist() but with album uri
+        # print(track["album"]["uri"])
         if (not playlist):
+            print("uri is:", uri)
             playlist, tracks = get_playlist(uri.split(":")[-1])
             DATASTORE.setPlaylist(playlist, tracks)
+
+            # try:
+                # playlist, tracks = get_playlist(uri.split(":")[-1])
+            # except:
+                # uri = track["album"]["uri"]
+                # playlist, tracks = get_playlist(uri.split(":")[-1])
+        
         now_playing['track_index'] = next(x for x, val in enumerate(tracks) 
                                   if val.uri == track_uri) + 1
         now_playing['track_total'] = len(tracks)
