@@ -93,7 +93,7 @@ class tkinterApp(tk.Tk):
         # Darwin is macos btw
         if (platform == 'darwin' or distro.id() != "raspbian"):
             self.geometry("320x240")
-            SCALE = 0.3
+            SCALE = 0.24
         else:
             self.attributes('-fullscreen', True)
             # originally was divided with 930, for my screen 1000 works better
@@ -245,7 +245,8 @@ class NowPlayingFrame(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         divider = tk.Canvas(self)
         divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief='ridge')
-        divider.grid(row = 1, column = 0, sticky ="we", pady=10, padx=(10, 30))
+        #padx=(10,30)
+        divider.grid(row = 1, column = 0, sticky ="we", pady=10, padx=(30, 30))
         contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief='ridge')
         contentFrame.grid(row = 2, column = 0, sticky ="nswe")
         contentFrame.grid_columnconfigure(0, weight=1)
@@ -259,18 +260,23 @@ class NowPlayingFrame(tk.Frame):
         # use self.track_label.set_text(...)
 
         #self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
-        self.artist_label = Marquee(contentFrame, text="", fontOffset=4)
-        self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 30))
+        self.artist_label = Marquee(contentFrame, text="", fontOffset=0)
+        # padx=(10, 30)
+        self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 10))
         # here
         #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
-        self.album_label = Marquee(contentFrame, text="", fontOffset=2)
-        self.album_label.grid(row=3, column=0,sticky ="we", padx=(10, 30))
+        self.album_label = Marquee(contentFrame, text="", fontOffset=0)
+        #padx=(10, 30)
+        self.album_label.grid(row=3, column=0,sticky ="we", padx=(30, 30))
         
         self.track_label = Marquee(contentFrame, text="")
-        self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 50))
+        #padx=(30, 50)
+        self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 30))
         
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
-        self.progress_frame.grid(row=4, column=0,sticky ="we", pady=(int(52 * SCALE), 0), padx=(30, 50))
+        # padx=(30, 50)
+        self.progress_frame.grid(row=4, column=0,sticky ="we", pady=(int(52 * SCALE), 0), padx=(30, 30))
+        
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_BLACK, highlightthickness=0)
         self.time_frame.grid(row=5, column=0,sticky ="we", padx=0, pady=(10, 0))
