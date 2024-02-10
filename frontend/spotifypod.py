@@ -101,8 +101,8 @@ class tkinterApp(tk.Tk):
             print("Scale of App is: ", SCALE)
 
         # 72 & 52
-        LARGEFONT =("ChicagoFLF", int(62 * SCALE))
-        MED_FONT =("ChicagoFLF", int(42 * SCALE))
+        LARGEFONT =("ChicagoFLF", int(72 * SCALE))
+        MED_FONT =("ChicagoFLF", int(52 * SCALE))
         # creating a container 
         container = tk.Frame(self)   
         container.pack(side = "top", fill = "both", expand = True)  
