@@ -241,7 +241,8 @@ class NowPlayingFrame(tk.Frame):
         self.update_time = False
         self.configure(bg=SPOT_BLACK)
         self.header_label = tk.Label(self, text ="Now Playing", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
-        self.header_label.grid(sticky='we', padx=(0, 10))
+        # padx=(0, 10)
+        self.header_label.grid(sticky='we', padx=(0, 0))
         self.grid_columnconfigure(0, weight=1)
         divider = tk.Canvas(self)
         divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief='ridge')
@@ -263,7 +264,7 @@ class NowPlayingFrame(tk.Frame):
         self.artist_label = Marquee(contentFrame, text="", fontOffset=0)
         # padx=(10, 30)
         self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 10))
-        # here
+        
         #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
         self.album_label = Marquee(contentFrame, text="", fontOffset=0)
         #padx=(10, 30)
@@ -275,7 +276,7 @@ class NowPlayingFrame(tk.Frame):
         
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
         # padx=(30, 50)
-        self.progress_frame.grid(row=4, column=0,sticky ="we", pady=(int(52 * SCALE), 0), padx=(30, 30))
+        self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(30, 30))
         
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_BLACK, highlightthickness=0)
