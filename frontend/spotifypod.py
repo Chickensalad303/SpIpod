@@ -134,9 +134,19 @@ class tkinterApp(tk.Tk):
         frame = self.frames[cont] 
         frame.tkraise() 
 
+# pass font arg, defaults to LARGEFONT
 class Marquee(tk.Canvas):
-    def __init__(self, parent, text, margin=2, borderwidth=0, relief='flat', fps=24):
+    def __init__(self, parent, text, fontOffset=0, margin=2, borderwidth=0, relief='flat', fps=24):
         tk.Canvas.__init__(self, parent, highlightthickness=0, borderwidth=borderwidth, relief=relief, background=SPOT_BLACK)
+        #
+        # fontOffset="Large" doesen't get checked cuz it defaults to largefont
+        # fontOffset="medium" sets to  mediumfont
+        #print((LARGEFONT[0], LARGEFONT[1] - fontOffset))
+        #currentFont = LARGEFONT
+        currentFont = (LARGEFONT[0], LARGEFONT[1] - fontOffset)
+        # print(fontOffset)
+        print(currentFont)
+
         self.fps = fps
         self.margin = margin
         self.borderwidth = borderwidth
@@ -144,7 +154,7 @@ class Marquee(tk.Canvas):
         # how much space we need. Use that to compute the initial size
         # of the canvas. 
         self.saved_text = text
-        self.text = self.create_text(0, -1000, text=text, font=LARGEFONT, fill=SPOT_GREEN, anchor="w", tags=("text",))
+        self.text = self.create_text(0, -1000, text=text, font=currentFont, fill=SPOT_GREEN, anchor="w", tags=("text",))
         (x0, y0, x1, y1) = self.bbox("text")
         self.width = (x1 - x0) + (2*margin) + (2*borderwidth)
         self.height = (y1 - y0) + (2*margin) + (2*borderwidth)
@@ -242,12 +252,23 @@ class NowPlayingFrame(tk.Frame):
         self.grid_rowconfigure(2, weight=1)
         self.context_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
         self.context_label.grid(row=0, column=0,sticky ="w", padx=int(50 * SCALE))
-        self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        
+        #when changing tk.Label to Marquee make sure to change references to
+        # .configure to set_text
+        # e.g. for self.track_label = Marquee(contentFrame, text="")
+        # use self.track_label.set_text(...)
+
+        #self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.artist_label = Marquee(contentFrame, text="", fontOffset=4)
         self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 30))
-        self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        # here
+        #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.album_label = Marquee(contentFrame, text="", fontOffset=2)
         self.album_label.grid(row=3, column=0,sticky ="we", padx=(10, 30))
+        
         self.track_label = Marquee(contentFrame, text="")
         self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 50))
+        
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
         self.progress_frame.grid(row=4, column=0,sticky ="we", pady=(int(52 * SCALE), 0), padx=(30, 50))
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
@@ -276,18 +297,24 @@ class NowPlayingFrame(tk.Frame):
         self.track_label.set_text(now_playing['name'])
         artist = now_playing['artist']
         if self.cached_artist != artist:
-            truncd_artist = artist if len(artist) < 20 else artist[0:17] + "..."
-            self.artist_label.configure(text=truncd_artist)
+
+            truncd_artist = artist
+            #truncd_artist = artist if len(artist) < 20 else artist[0:17] + "..."
+            #self.artist_label.configure(text=truncd_artist)
+            self.artist_label.set_text(truncd_artist)
             self.cached_artist = artist
         album = now_playing['album']
         if self.cached_album != album:
-            truncd_album = album if len(album) < 20 else album[0:17] + "..."
-            self.album_label.configure(text=truncd_album)
+            #truncd_album = album if len(album) < 20 else album[0:17] + "..."
+            truncd_album = album
+            #self.album_label.configure(text=truncd_album)
+            self.album_label.set_text(truncd_album)
             self.cached_album = album
         context_name = now_playing['context_name']
         truncd_context = context_name if context_name else "Now Playing"
         truncd_context = truncd_context if len(truncd_context) < 20 else truncd_context[0:17] + "..."
         self.header_label.configure(text=truncd_context)
+        
         update_delta = 0 if not now_playing['is_playing'] else (time.time() - now_playing["timestamp"]) * 1000.0
         adjusted_progress_ms = now_playing['progress'] + update_delta
         adjusted_remaining_ms = max(0, now_playing['duration'] - adjusted_progress_ms)
