@@ -276,6 +276,7 @@ class NowPlayingFrame(tk.Frame):
         
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
         # padx=(30, 50)
+        # padx=(30,30)
         self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(30, 30))
         
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
@@ -293,7 +294,10 @@ class NowPlayingFrame(tk.Frame):
         if not self.inflated:
             parent_width = self.winfo_width()
             if parent_width > 2:
-                self.midpoint = (parent_width / 2) - 40
+                # - 40
+                # -30
+                print(parent_width * SCALE /2)
+                self.midpoint = (parent_width / 2) - 30.50
                 self.progress_width = self.frame_img.width()
                 self.progress_start_x = self.midpoint - self.progress_width / 2
                 self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
