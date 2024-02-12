@@ -268,18 +268,22 @@ class NowPlayingFrame(tk.Frame):
         #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
         self.album_label = Marquee(contentFrame, text="", fontOffset=0)
         #padx=(10, 30)
-        self.album_label.grid(row=3, column=0,sticky ="we", padx=(30, 30))
+        self.album_label.grid(row=3, column=0,sticky ="we", padx=(10, 10))
         
         self.track_label = Marquee(contentFrame, text="")
         #padx=(30, 50)
         self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 30))
         
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
-        # padx=(30, 50)
-        # padx=(30,30)
-        self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(30, 30))
         
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
+        # padx=(30, 50)
+        # padx=(30,30)
+        # 30,20
+        padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
+        print(padding_offset)
+        self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(padding_offset, 0))
+        
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_BLACK, highlightthickness=0)
         self.time_frame.grid(row=5, column=0,sticky ="we", padx=0, pady=(10, 0))
         self.time_frame.grid_columnconfigure(0, weight=1)
@@ -297,7 +301,7 @@ class NowPlayingFrame(tk.Frame):
                 # - 40
                 # -30
                 print(parent_width * SCALE /2)
-                self.midpoint = (parent_width / 2) - 30.50
+                self.midpoint = (parent_width / 2) - 30.5
                 self.progress_width = self.frame_img.width()
                 self.progress_start_x = self.midpoint - self.progress_width / 2
                 self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
