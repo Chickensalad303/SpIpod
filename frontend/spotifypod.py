@@ -300,7 +300,11 @@ class NowPlayingFrame(tk.Frame):
             if parent_width > 2:
                 # - 40
                 # - 30
-                print(parent_width * SCALE /2)
+                padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
+                print((self.frame_img.width() - self.winfo_width()) / 2 * SCALE)
+                # somehow implement padding offset so don't have to use random value 
+                # (for my display/ui setup doing -30.5 makes the playback bar work but 
+                # its stoopid)
                 self.midpoint = (parent_width / 2) - 30.5
                 self.progress_width = self.frame_img.width()
                 self.progress_start_x = self.midpoint - self.progress_width / 2
