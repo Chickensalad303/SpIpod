@@ -272,7 +272,7 @@ Uncomment and fill the following line:
 `OPTIONS="--username <USERNAME> --password <PASSWORD>"`
 
 
-And maybe you want also to consider the following:
+And add whichever of the following options you want:
 
 ```
 # The displayed device type in Spotify clients. 
@@ -282,6 +282,10 @@ And maybe you want also to consider the following:
 # "avr" (Audio/Video Receiver), "stb" (Set-Top Box), and "audiodongle".
 
 DEVICE_TYPE="smartphone"
+```
+then turn off discovery, so only devices logged into the same spotify account can interact with SpIpod (like for example managing queue)
+```
+LIBRESPOT_DISABLE_DISCOVERY=1
 ```
 
 # Wiring
