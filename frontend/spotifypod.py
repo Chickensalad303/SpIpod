@@ -299,6 +299,7 @@ class NowPlayingFrame(tk.Frame):
             parent_width = self.winfo_width()
             if parent_width > 2:
                 # - 40
+                # - 30
                 print(parent_width * SCALE /2)
                 self.midpoint = (parent_width / 2) - 30.5
                 self.progress_width = self.frame_img.width()
