@@ -280,10 +280,11 @@ class NowPlayingFrame(tk.Frame):
         # padx=(30, 50)
         # padx=(30,30)
         # 30,20
+        # needs fixing, this isn't centering
         padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
         print(padding_offset)
         self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(padding_offset, 0))
-        
+
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_BLACK, highlightthickness=0)
         self.time_frame.grid(row=5, column=0,sticky ="we", padx=0, pady=(10, 0))
         self.time_frame.grid_columnconfigure(0, weight=1)
@@ -300,12 +301,13 @@ class NowPlayingFrame(tk.Frame):
             if parent_width > 2:
                 # - 40
                 # - 30
-                padding_offset= (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
-                print((self.frame_img.width() - self.winfo_width()) / 2 * SCALE)
+                # self.midpoint = (parent_width / 2) - 30.5
+                
                 # somehow implement padding offset so don't have to use random value 
                 # (for my display/ui setup doing -30.5 makes the playback bar work but 
                 # its stoopid)
-                self.midpoint = (parent_width / 2) - 30.5
+                self.midpoint = self.frame_img.width() / 2
+                print("this is midpoint of playback bar", self.midpoint)
                 self.progress_width = self.frame_img.width()
                 self.progress_start_x = self.midpoint - self.progress_width / 2
                 self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
