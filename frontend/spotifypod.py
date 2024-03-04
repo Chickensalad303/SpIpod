@@ -254,7 +254,6 @@ class NowPlayingFrame(tk.Frame):
         self.grid_rowconfigure(2, weight=1)
         self.context_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
         self.context_label.grid(row=0, column=0,sticky ="w", padx=int(50 * SCALE))
-        
         #when changing tk.Label to Marquee make sure to change references to
         # .configure to set_text
         # e.g. for self.track_label = Marquee(contentFrame, text="")
@@ -281,9 +280,13 @@ class NowPlayingFrame(tk.Frame):
         # padx=(30,30)
         # 30,20
         # needs fixing, this isn't centering
+        self.update()
         padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
-        print(padding_offset)
-        self.progress_frame.grid(row=4, column=0,sticky ="wens", pady=(int(52 * SCALE), 0), padx=(padding_offset, 0))
+        # padding_offset = 25 for this offset im just tryign random shit
+        padding_offset = (self.winfo_reqwidth() - self.frame_img.width()) / 1.5 * SCALE
+
+        print(padding_offset, "\n", self.winfo_reqwidth(), self.frame_img.width())
+        self.progress_frame.grid(row=4, column=0, sticky="wens", pady=(int(52 * SCALE), 0), padx=(padding_offset, 0))
 
         self.time_frame = tk.Canvas(contentFrame, bg=SPOT_BLACK, highlightthickness=0)
         self.time_frame.grid(row=5, column=0,sticky ="we", padx=0, pady=(10, 0))
