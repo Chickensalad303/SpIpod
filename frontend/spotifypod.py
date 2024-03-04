@@ -312,7 +312,7 @@ class NowPlayingFrame(tk.Frame):
                 self.midpoint = self.frame_img.width() / 2
                 print("this is midpoint of playback bar", self.midpoint)
                 self.progress_width = self.frame_img.width()
-                self.progress_start_x = self.midpoint - self.progress_width / 2
+                self.progress_start_x = self.midpoint - self.progress_width / 2 -1 #why the -1, idk somehow is related to janky solution for padding_offset, but it works on my screen i guess
                 self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
                 self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
                 self.inflated = True
