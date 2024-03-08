@@ -53,7 +53,7 @@ then set redis-server to start on boot, which it does automatically but on some 
 `sudo systemctl enable redis-server`
 & do this:
 `sudo service redis-server start`
-do the same for raspotify:
+do the same for raspotify in later steps after it has been installed:
 `sudo systemctl enable raspotify`
 
 
@@ -123,7 +123,18 @@ Add these lines before `exit` in the file:
 thats it, now the driver should be installed and run on boot.
 
 
+# Raspotify Setup
+install raspotify
+```sudo apt-get -y install curl && curl -sL https://dtcooper.github.io/raspotify/install.sh | sh```
 
+edit the [raspotify](https://github.com/dtcooper/raspotify) configuration
+
+```sudo systemctl enable raspotify```
+
+
+
+
+# [OLD] 
 2. Install Required Packages.
 
 Installation for python3-pip, raspotify, python3-tk, openbox
