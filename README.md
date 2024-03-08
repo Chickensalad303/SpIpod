@@ -51,6 +51,8 @@ sudo apt-get install x11-xserver-utils
 ```
 then set redis-server to start on boot, which it does automatically but on some devices it don't 
 `sudo systemctl enable redis-server`
+& do this:
+`sudo service redis-server start`
 do the same for raspotify:
 `sudo systemctl enable raspotify`
 
