@@ -34,11 +34,18 @@ RIGHT_KEY_CODE = 8189699 if platform == "darwin" else 114
 PREV_KEY_CODE = 2818092 if platform == "darwin" else 0
 NEXT_KEY_CODE = 3080238 if platform == "darwin" else 0
 PLAY_KEY_CODE = 3211296 if platform == "darwin" else 0
+QUIT_KEY_CODE = 0 if platform == "darwin" else 22
 
 SCREEN_TIMEOUT_SECONDS = 60
 
 wheel_position = -1
 last_button = -1
+
+#useful for debugging, like for when using vncviewer  
+def onQuitPressed():
+    global page, app
+    app.destroy()
+    
 
 last_interaction = time.time()
 screen_on = True
@@ -518,6 +525,8 @@ def onKeyPress(event):
         onPrevPressed()
     elif (c == PLAY_KEY_CODE):
         onPlayPressed()
+    elif (c == QUIT_KEY_CODE):
+        onQuitPressed()
     else:
         print("unrecognized key: ", c)
 
@@ -602,7 +611,7 @@ def onDownPressed():
     global page, app
     page.nav_down()
     render(app, page.render())
-   
+
 # Driver Code 
 page = RootPage(None)
 app = tkinterApp() 
