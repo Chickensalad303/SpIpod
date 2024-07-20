@@ -146,7 +146,7 @@ To to test if its working, you can log onto your Pi using vnc, you should be abl
 # Spotify API setup
 TL:DR is
 Create a Spotify [developer account](https://developer.spotify.com/dashboard/applications/), then create an app to get a client id and client secret, afterwars you can create your redirect URI
-\
+
 <details>
   <summary>Detailed API setup</summary>
   
@@ -157,16 +157,18 @@ Create a Spotify [developer account](https://developer.spotify.com/dashboard/app
   <li>Select the Web API as the api to have access to</li>
   <li>Agree to all the terms nd whaterver and save</li>
   <li>Then go into the settings of the app to get the client ID and client secret. We will use these later</li>
-
-  <details>
-    <summary>The steps above as pictures</summary>
-    After loggin in you get to the dashboard. Here you want to create a new app
-    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_Dashboard_example.png>
-    Then you fill out all required fields as detailed above
-    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_ClientInfo_example.png>
-    After creating the app you can now enter the settings and view the Client ID and Client Secret. These will be used later
-    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_CreateApp_example.png>
-  </details>
+  <br>
+  <ul>
+    <details>
+      <summary>The steps above as pictures</summary>
+      After loggin in you get to the dashboard. Here you want to create a new app
+      <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_Dashboard_example.png>
+      Then you fill out all required fields as detailed above
+      <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_ClientInfo_example.png>
+      After creating the app you can now enter the settings and view the Client ID and Client Secret. These will be used later
+      <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_CreateApp_example.png>
+    </details>
+  </ul>
 
 </details>
 
