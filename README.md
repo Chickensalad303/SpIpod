@@ -156,6 +156,15 @@ Create a Spotify [developer account](https://developer.spotify.com/dashboard/app
   <li>Enter `http://localhost:8080/` as the Redirect URI</li>
   <li>Select the Web API as the api to have access to</li>
   <li>Agree to all the terms nd whaterver and save</li>
+  <li>Then go into the settings of the app to get the client ID and client secret. We will use these later</li>
+
+  <details>
+    <summary>The steps above as pictures</summary>
+    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_Dashboard_example.png)
+    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_ClientInfo_example.png)
+    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_CreateApp_example.png)
+   
+  </details>
 
 </details>
 
