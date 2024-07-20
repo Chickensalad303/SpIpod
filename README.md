@@ -77,7 +77,7 @@ gcc -Wall -pthread -o click click.c -lpigpio -lrt
 to compole click.c \
 then run `sudo ./click &` so you can test the clickwheel (assuming the wiring is done)
 
-\
+
 # Display setup
 I used a 2 inch model [waveshare ST7789V](https://www.amazon.de/Waveshare-Resolution-Interface-Examples-Raspberry/dp/B081Q79X2F) display
 wiring for display also below.
@@ -140,6 +140,8 @@ Add these lines before `exit` in the file:
 ```
 
 Now just save and close. Thats it, now the driver should be installed and run on boot.
+### NOTICE: since we are using the default openbox desktop environment, the display might still be black.
+To to test if its working, you can log onto your Pi using vnc, you should be able to right click to open certain apps. These actions should also be visible on the your display.
 
 
 # Raspotify Setup
@@ -147,9 +149,12 @@ install raspotify
 ```sudo apt-get -y install curl && curl -sL https://dtcooper.github.io/raspotify/install.sh | sh```
 
 
-edit the [raspotify](https://github.com/dtcooper/raspotify) configuration to your liking (all settings listed here: https://github.com/dtcooper/raspotify/wiki/Configuration)
+edit the [raspotify](https://github.com/dtcooper/raspotify) configuration to your liking (all settings listed here: https://github.com/dtcooper/raspotify/wiki/Configuration).
 \
-and enable the raspotify service to cover the odd case, where it doesn't enable automatically:
+The most importaint labels to fill out are `LIBRESPOT_USERNAME=""` and `LIBRESPOT_PASSWORD=""` these should be your spotify username/email and password.
+
+\
+Also enable the raspotify service to cover the odd case, where it doesn't enable automatically: \
 ```sudo systemctl enable raspotify```
 
 
