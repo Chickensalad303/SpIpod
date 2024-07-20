@@ -160,10 +160,12 @@ Create a Spotify [developer account](https://developer.spotify.com/dashboard/app
 
   <details>
     <summary>The steps above as pictures</summary>
-    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_Dashboard_example.png)
-    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_ClientInfo_example.png)
-    ![alt text](https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_CreateApp_example.png)
-   
+    After loggin in you get to the dashboard. Here you want to create a new app
+    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_Dashboard_example.png>
+    Then you fill out all required fields as detailed above
+    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_ClientInfo_example.png>
+    After creating the app you can now enter the settings and view the Client ID and Client Secret. These will be used later
+    <img src=https://raw.githubusercontent.com/Chickensalad303/SpIpod/master/.docs/Spotify_CreateApp_example.png>
   </details>
 
 </details>
