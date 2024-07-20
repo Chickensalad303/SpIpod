@@ -143,6 +143,21 @@ Now just save and close. Thats it, now the driver should be installed and run on
 ### NOTICE: since we are using the default openbox desktop environment, the display might still be black.
 To to test if its working, you can log onto your Pi using vnc, you should be able to right click to open certain apps. These actions should also be visible on the your display.
 
+# Spotify API setup
+TL:DR is
+Create a Spotify [developer account](https://developer.spotify.com/dashboard/applications/), then create an app to get a client id and client secret, afterwars you can create your redirect URI
+\
+<details>
+  <summary>Detailed API setup</summary>
+  
+  <li>got to https://developer.spotify.com/dashboard/applications/</li>
+  <li>log in</li>
+  <li>Create an app, the name and description can be whatever</li>
+  <li>Enter `http://localhost:8080/` as the Redirect URI</li>
+  <li>Select the Web API as the api to have access to</li>
+  <li>Agree to all the terms nd whaterver and save</li>
+
+</details>
 
 # Raspotify Setup
 install raspotify
@@ -156,6 +171,8 @@ The most importaint labels to fill out are `LIBRESPOT_USERNAME=""` and `LIBRESPO
 \
 Also enable the raspotify service to cover the odd case, where it doesn't enable automatically: \
 ```sudo systemctl enable raspotify```
+
+
 
 
 
