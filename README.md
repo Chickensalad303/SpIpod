@@ -1,16 +1,16 @@
-## Reminder comment out framebuffer part of /boot/config.txt, this is only used for testing via vnc viewer
+## Reminder to self: comment out framebuffer part of /boot/config.txt, this is only used for testing via vnc viewer
 I'm using a ipod classic from 2004 (A1059)
 
 # sPot
 This is a Fork of the [Spotify Ipod](https://github.com/dupontgu/retro-ipod-spotify-client) by Guy Dupont
 
-This code is meant to accompany [this project](https://hackaday.io/project/177034-spot-spotify-in-a-4th-gen-ipod-2004) in which a Spotify client is built into an iPod "Classic" from 2004. Everything is meant to run on a Raspberry Pi Zero W.
-
-Since we are using the lite version of raspbian, some extra packages need to be installed:
+This code is meant to accompany my own version of [this project](https://hackaday.io/project/177034-spot-spotify-in-a-4th-gen-ipod-2004) in which a Spotify client is built into an iPod "Classic" from 2004. In my version everything is meant to run on a Raspberry Pi Zero 2 W. 
 
 # Instructions
 ### I have used python 3.9.2 idk if itll work with other versions
-
+### I used a Raspberry Pi zero 2 W. This guide uses the newest version of raspotify, which is not available to the older Rpi Zero models. You can still try with older versions of raspotify, but your mileage may vary.
+\
+Since we are using the lite version of raspbian, some extra packages need to be installed:
 ## Install updates 
 
 ```
@@ -49,18 +49,18 @@ sudo apt-get install lightdm
 
 sudo apt-get install x11-xserver-utils
 ```
-then set redis-server to start on boot, which it does automatically but on some devices it don't 
-`sudo systemctl enable redis-server`
-& do this:
-`sudo service redis-server start`
-do the same for raspotify in later steps after it has been installed:
+then set redis-server to start on boot, which it does automatically but on some devices it don't: \
+`sudo systemctl enable redis-server` \
+& do this: \
+`sudo service redis-server start` \
+do the same for raspotify in later steps after it has been installed: \
 `sudo systemctl enable raspotify`
 
 
-
+\
 # Clickwheel setup
 NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board
-The schematics for clickwheel wiring is at the bottom
+The schematics for clickwheel wiring is at the bottom of the README
 
 Install PiGPIO for clickwheel
 ```
@@ -70,13 +70,19 @@ cd pigpio-master
 make
 sudo make install
 ```
-run `gcc -Wall -pthread -o click click.c -lpigpio -lrt ` to compole click.c, then `sudo ./click &` to test
+run 
+```
+gcc -Wall -pthread -o click click.c -lpigpio -lrt 
+```
+to compole click.c \
+then run `sudo ./click &` so you can test the clickwheel (assuming the wiring is done)
 
+\
 # Display setup
 I used a 2 inch model [waveshare ST7789V](https://www.amazon.de/Waveshare-Resolution-Interface-Examples-Raspberry/dp/B081Q79X2F) display
 wiring for display also below.
 
-used [this guide](http://rsflightronics.com/spotifypod) which links to [this solution on github](https://github.com/dupontgu/retro-ipod-spotify-client/issues/23)
+I used [this guide](http://rsflightronics.com/spotifypod) which links to [this solution on github](https://github.com/dupontgu/retro-ipod-spotify-client/issues/23)
 
 basically this is how to setup:\
 Edit `/boot/config.txt` & comment `dtoverlay=vc4-kms-v3d` & add:
@@ -86,15 +92,16 @@ hdmi_mode=87
 hdmi_cvt=320 240 60 1 0 0 0
 hdmi_force_hotplug=1
 ```
-restart pi, then
+restart the pi, then
 ```
 sudo apt install cmake git
 cd ~
 git clone https://github.com/juj/fbcp-ili9341.git
 cd fbcp-ili9341
 ```
-then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 320` in line 20\
-go edit `st7735r.cpp` and comment out the line starting with `SPI_TRANSFER` (around line 100) then add `SPI_TRANSFER(0x37, 0, 0);` & save
+then edit `st7735r.h` & change `#define DISPLAY_NATIVE HEIGHT 240` to `#define DISPLAY_NATIVE HEIGHT 320` in line 20 
+\
+Then edit `st7735r.cpp` and comment out the line starting with `SPI_TRANSFER` (around line 100) then add `SPI_TRANSFER(0x37, 0, 0);` & save
 
 
 then type
@@ -108,13 +115,23 @@ for my case I used:
 cmake -DST7789=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=30 -DSTATISTICS=0 -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON -DUSE_DMA_TRANSFERS=OFF ..
 ```
 
-in case you need to flip the screen, include this option before the two dots at the end: `-DDISPLAY_ROTATE_180_DEGREES=ON`\
-afterwards run `sudo make -j`\
-you can now test the driver in that same folder with `sudo ./fbcp-ili9341`
-
-but since the driver should start automatically on boot we have to do one last change.
-Open `/etc/rc.local` with a text editor with sudo privileges:\
-`sudo nano /etc/rc.local` if you don't know what you're doing, I prefer vim
+in case you need to flip the screen, include this option before the two dots at the end:
+```
+-DDISPLAY_ROTATE_180_DEGREES=ON
+```
+afterwards run 
+```
+sudo make -j
+```
+\
+you can now test the driver in that same folder with 
+```
+sudo ./fbcp-ili9341
+```
+\
+but since the driver should start automatically on boot we have to do one last thing.
+Open `/etc/rc.local` with a text editor with sudo privileges (e.g.):\
+`sudo nano /etc/rc.local` if you don't know what you're doing, personally I prefer using vim
 
 Add these lines before `exit` in the file:
 ```
@@ -122,15 +139,17 @@ Add these lines before `exit` in the file:
 /home/pi/fbcp-ili9341/build/fbcp-ili9341 &
 ```
 
-thats it, now the driver should be installed and run on boot.
+Now just save and close. Thats it, now the driver should be installed and run on boot.
 
 
 # Raspotify Setup
 install raspotify
 ```sudo apt-get -y install curl && curl -sL https://dtcooper.github.io/raspotify/install.sh | sh```
 
-edit the [raspotify](https://github.com/dtcooper/raspotify) configuration
 
+edit the [raspotify](https://github.com/dtcooper/raspotify) configuration to your liking (all settings listed here: https://github.com/dtcooper/raspotify/wiki/Configuration)
+\
+and enable the raspotify service to cover the odd case, where it doesn't enable automatically:
 ```sudo systemctl enable raspotify```
 
 
