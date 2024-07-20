@@ -104,7 +104,9 @@ cd /build
 ```
 Depending on what gpio pins you've soldered (refer to pinout below)  to `TFT_DATA_CONTROL` and `TFT_RESET_PIN` might be different.
 for my case I used:
-`cmake -DST7789=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=30 -DSTATISTICS=0 -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON -DUSE_DMA_TRANSFERS=OFF ..`
+```
+cmake -DST7789=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=30 -DSTATISTICS=0 -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON -DUSE_DMA_TRANSFERS=OFF ..
+```
 
 in case you need to flip the screen, include this option before the two dots at the end: `-DDISPLAY_ROTATE_180_DEGREES=ON`\
 afterwards run `sudo make -j`\
