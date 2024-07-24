@@ -8,14 +8,15 @@ MENU_PAGE_SIZE = 6
 MENU_RENDER_TYPE = 0
 NOW_PLAYING_RENDER = 1
 SEARCH_RENDER = 2
+SETTINGS_RENDER = 3
 
 # Menu line item types
 LINE_NORMAL = 0
 LINE_HIGHLIGHT = 1
 LINE_TITLE = 2
 
-#spotify_manager.refresh_devices()
-spotify_manager.refresh_data()
+spotify_manager.refresh_devices()
+#spotify_manager.refresh_data()
 
 
 class LineItem():
@@ -40,6 +41,34 @@ class MenuRendering(Rendering):
         self.total_count = total_count
         self.now_playing = spotify_manager.DATASTORE.now_playing
         self.has_internet = spotify_manager.has_internet
+
+#lass SettingsRendering(Rendering):
+#   def __init__(self):
+#       super().__init__(SETTINGS_RENDER)
+#       self.callback = None
+#       self.after_id = None
+
+        # def subscribe(self, app, callback):
+        #     if callback == self.callback:
+        #         return
+        #     new_callback = self.callback is None
+        #     self.callback = callback
+        #     self.app = app
+        #     if new_callback:
+        #         self.refresh()
+
+        # def refresh(self):
+        #     if not self.callback:
+        #         return
+        #     if self.after_id:
+        #         self.app.after_cancel(self.after_id)
+        #     self.callback = None
+        #     self.after_id = self.app.after(500, lambda: self.refresh())
+
+        # def unsubscribe(self):
+        #     super().unsubscribe()
+        #     self.callback = None
+        #     self.app = None
 
 class NowPlayingRendering(Rendering):
     def __init__(self):
@@ -280,6 +309,14 @@ class MenuPage():
                 lines.append(EMPTY_LINE_ITEM)
         return MenuRendering(lines=lines, header=self.header, page_start=self.index, total_count=total_size)
 
+class SettingsPage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__(self.get_title(), previous_page, has_sub_page=True)
+        # self.
+
+    def get_title(self):
+        return "Settings"
+
 class ShowsPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__(self.get_title(), previous_page, has_sub_page=True)
@@ -507,20 +544,21 @@ class RootPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__("sPot", previous_page, has_sub_page=True)
         self.pages = [
+            NowPlayingPage(self, "Now Playing", NowPlayingCommand()),
             ArtistsPage(self),
             AlbumsPage(self),
             NewReleasesPage(self),
             PlaylistsPage(self),
             ShowsPage(self),
             SearchPage(self),
-            NowPlayingPage(self, "Now Playing", NowPlayingCommand())
+            SettingsPage(self),
         ]
         self.index = 0
         self.page_start = 0
     
     def get_pages(self):
         if (not spotify_manager.DATASTORE.now_playing):
-            return self.pages[0:-1]
+            return self.pages[1:-1] #starts at 1, because NowPlayingPage is the first entry in pages array
         return self.pages
     
     def total_size(self):

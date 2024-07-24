@@ -33,7 +33,7 @@ LEFT_KEY_CODE = 8124162 if platform == "darwin" else 113
 RIGHT_KEY_CODE = 8189699 if platform == "darwin" else 114
 PREV_KEY_CODE = 2818092 if platform == "darwin" else 0
 NEXT_KEY_CODE = 3080238 if platform == "darwin" else 0
-PLAY_KEY_CODE = 3211296 if platform == "darwin" else 0
+PLAY_KEY_CODE = 3211296 if platform == "darwin" else 36
 QUIT_KEY_CODE = 0 if platform == "darwin" else 22
 
 SCREEN_TIMEOUT_SECONDS = 60
@@ -122,7 +122,7 @@ class tkinterApp(tk.Tk):
    
         # iterating through a tuple consisting 
         # of the different page layouts 
-        for F in (StartPage, NowPlayingFrame, SearchFrame): 
+        for F in (StartPage, NowPlayingFrame, SearchFrame): #SettingsFrame
    
             frame = F(container, self) 
    
@@ -239,6 +239,20 @@ class SearchFrame(tk.Frame):
         self.letter_label.configure(text=active_char)
         loading_text = "Loading..." if loading else ""
         self.loading_label.configure(text=loading_text)
+
+#class SettingsFrame(tk.Frame):
+#    def __init__(self, parent, controller):
+#        tk.Frame.__init__(self, parent)
+#        self.configure(bg=SPOT_BLACK)
+#        self.header_label = tk.Label(self, text="Settings", font=LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
+#        self.header_label.grid(sticky="we", padx=(0, 10))
+#        self.grid_columnconfigure(0, weight=1)
+#        divider = tk.Canvas(self)
+#        divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief="ridge")
+#        divider.grid(row = 1, column=0, sticky="we", pady=(10, int(160 * SCALE)), padx=(10, 30))
+#        contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
+#        contentFrame.grid(row=2, column=0, sticky="nswe")
+
 
 class NowPlayingFrame(tk.Frame): 
     def __init__(self, parent, controller):  
@@ -407,7 +421,9 @@ class StartPage(tk.Frame):
         
         self.listItems = []
         self.arrows=[]
-        for x in range(6):
+        #x = 1 # x is set to 1, to skip the firs entry into RootPage inside view_model.py, this is skipped so that now playing is at the top
+        # range(7) aka 0-6 refers to: artists, albums, new releases, podcasts, playlists, search and my added settings page. The now playing page is added dynamically
+        for x in range(7):
             item = tk.Label(listFrame, text =" " + str(x), justify=tk.LEFT, anchor="w", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN, padx=(30 * SCALE))
             imgLabel = tk.Label(listFrame, image=self.green_arrow_image, background=SPOT_BLACK)
             imgLabel.image = self.green_arrow_image
@@ -434,8 +450,8 @@ class StartPage(tk.Frame):
         truncd_header = header if len(header) < 20 else header[0:17] + "..."
         self.header_label.configure(text=truncd_header)
         play_image = self.space_image
-        if now_playing is not None:
-            play_image = self.play_image if now_playing['is_playing'] else self.pause_image
+        if now_playing is not None: #here play_image and pause_image can be switched around, i did so, cuz i think its intuitive taht way
+            play_image = self.play_image if now_playing['is_playing'] else self.pause_image #edit 2: chagned them back again
         self.play_indicator.configure(image = play_image)
         self.play_indicator.image = play_image
         wifi_image = self.wifi_image if has_wifi else self.space_image
@@ -544,6 +560,16 @@ def render_search(app, search_render):
     app.show_frame(SearchFrame)
     search_render.subscribe(app, update_search)
 
+# def update_settings(settings):
+#     frame = app.frames[SettingsFrame]
+#     frame.update_settings(settings)
+
+#def render_settings(app, settings_render):
+#    app.show_frame(SettingsFrame)
+    # settings_render.subscribe(app, update_settings
+#    frame = app.frames[SettingsFrame]
+#    frame.render()    
+
 def render_menu(app, menu_render):
     app.show_frame(StartPage)
     page = app.frames[StartPage]
@@ -570,6 +596,8 @@ def render(app, render):
         render_now_playing(app, render)
     elif (render.type == SEARCH_RENDER):
         render_search(app, render)
+    #elif (render.type == SETTINGS_RENDER):
+    #    render_settings(app, render)
 
 def onPlayPressed():
     global page, app
