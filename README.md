@@ -11,6 +11,8 @@ This code is meant to accompany my own version of [this project](https://hackada
 ### I used a Raspberry Pi zero 2 W. This guide uses the newest version of raspotify, which is not available to the older Rpi Zero models. You can still try with older versions of raspotify, but your mileage may vary.
 \
 Since we are using the lite version of raspbian, some extra packages need to be installed:
+\
+And if you need to configure wifi to enable ssh & vnc, you can edit `/etc/wpa_supplicant/wpa_supplicant.conf`
 ## Install updates 
 
 ```
