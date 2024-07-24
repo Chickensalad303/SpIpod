@@ -59,7 +59,7 @@ do the same for raspotify in later steps after it has been installed: \
 `sudo systemctl enable raspotify`
 
 
-\
+
 # Clickwheel setup
 NOTICE: the pins on the clickwheel ribbon cable should face down on the breakout board
 The schematics for clickwheel wiring is at the bottom of the README
@@ -187,6 +187,22 @@ The most importaint labels to fill out are `LIBRESPOT_USERNAME=""` and `LIBRESPO
 Also enable the raspotify service to cover the odd case, where it doesn't enable automatically: \
 ```sudo systemctl enable raspotify```
 
+
+
+
+## Install python modules
+run `pip install -r requirements` inside of `SpIpod/frontend/`
+\
+if you get an error while its installing Pillow e.g. 
+```
+The headers or library files could not be found for jpeg, a required dependency when compiling Pillow from source.
+```
+or something similair like for example:
+```
+ERROR: Failed building wheel for Pillow
+```
+
+try installing these: `sudo apt install libjpeg-dev zlib1g-dev` and attempt to install the python modules from above again
 
 
 
