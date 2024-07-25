@@ -185,7 +185,10 @@ The most importaint labels to fill out are `LIBRESPOT_USERNAME=""` and `LIBRESPO
 
 \
 Also enable the raspotify service to cover the odd case, where it doesn't enable automatically: \
-```sudo systemctl enable raspotify```
+```
+sudo systemctl enable raspotify
+sudo systemctl restart raspotify
+```
 
 
 
