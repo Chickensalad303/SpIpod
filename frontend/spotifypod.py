@@ -60,6 +60,14 @@ def screen_wake():
     screen_on = True
     os.system('xset -display :0 dpms force on')
 
+#i hav no idea if these are the correct/safest ways to do this, but idk
+def system_reboot():
+    os.system("reboot -h")
+
+def system_poweroff():
+    os.system("shutdown -h now")
+
+
 def flattenAlpha(img):
     global SCALE
     [img_w, img_h] = img.size
@@ -122,7 +130,7 @@ class tkinterApp(tk.Tk):
    
         # iterating through a tuple consisting 
         # of the different page layouts 
-        for F in (StartPage, NowPlayingFrame, SearchFrame): #SettingsFrame
+        for F in (StartPage, NowPlayingFrame, SearchFrame, SettingsFrame): #SettingsFrame
    
             frame = F(container, self) 
    
@@ -240,18 +248,36 @@ class SearchFrame(tk.Frame):
         loading_text = "Loading..." if loading else ""
         self.loading_label.configure(text=loading_text)
 
-#class SettingsFrame(tk.Frame):
-#    def __init__(self, parent, controller):
-#        tk.Frame.__init__(self, parent)
-#        self.configure(bg=SPOT_BLACK)
-#        self.header_label = tk.Label(self, text="Settings", font=LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
-#        self.header_label.grid(sticky="we", padx=(0, 10))
-#        self.grid_columnconfigure(0, weight=1)
-#        divider = tk.Canvas(self)
-#        divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief="ridge")
-#        divider.grid(row = 1, column=0, sticky="we", pady=(10, int(160 * SCALE)), padx=(10, 30))
-#        contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
-#        contentFrame.grid(row=2, column=0, sticky="nswe")
+class SettingsFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg=SPOT_BLACK)
+        self.grid_columnconfigure(0, weight=1)
+
+        divider = tk.Canvas(self)
+        divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief="ridge")
+        divider.grid(row = 2, column=0, sticky="we", pady=(10, int(160 * SCALE)), padx=(10, 30))
+
+        contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
+        contentFrame.grid(row=1, column=0, sticky="nswe")
+        contentFrame.grid_columnconfigure(0, weight=1)        
+        # self.header_label = tk.Label(self, text="nan", font=LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
+        self.header_label = Marquee(contentFrame, text="Non", fontOffset=0)
+        self.header_label.grid(sticky="we", padx=(0, 10))
+
+    def update_settings(self, updated_info):
+        self.current_setting = updated_info
+        self.current_setting_name = self.current_setting["name"]
+        self.current_setting_id = self.current_setting["id"]
+        
+        print(self.current_setting)
+        self.header_label.set_text(self.current_setting_name)
+        if self.current_setting_id == 0:
+            print("rebooting now")
+            system_reboot()
+        elif self.current_setting_id == 1:
+            print("Shutting down now")
+            system_poweroff()
 
 
 class NowPlayingFrame(tk.Frame): 
@@ -423,7 +449,7 @@ class StartPage(tk.Frame):
         self.arrows=[]
         #x = 1 # x is set to 1, to skip the firs entry into RootPage inside view_model.py, this is skipped so that now playing is at the top
         # range(7) aka 0-6 refers to: artists, albums, new releases, podcasts, playlists, search and my added settings page. The now playing page is added dynamically
-        for x in range(7):
+        for x in range(6):
             item = tk.Label(listFrame, text =" " + str(x), justify=tk.LEFT, anchor="w", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN, padx=(30 * SCALE))
             imgLabel = tk.Label(listFrame, image=self.green_arrow_image, background=SPOT_BLACK)
             imgLabel.image = self.green_arrow_image
@@ -560,6 +586,17 @@ def render_search(app, search_render):
     app.show_frame(SearchFrame)
     search_render.subscribe(app, update_search)
 
+
+
+def update_settings(setting):
+    frame = app.frames[SettingsFrame]
+    # print(setting)
+    frame.update_settings(setting)
+
+def render_settings(app, settings_render):
+    app.show_frame(SettingsFrame)
+    settings_render.subscribe(app, update_settings)
+
 # def update_settings(settings):
 #     frame = app.frames[SettingsFrame]
 #     frame.update_settings(settings)
@@ -596,8 +633,8 @@ def render(app, render):
         render_now_playing(app, render)
     elif (render.type == SEARCH_RENDER):
         render_search(app, render)
-    #elif (render.type == SETTINGS_RENDER):
-    #    render_settings(app, render)
+    elif (render.type == SETTINGS_RENDER):
+        render_settings(app, render)
 
 def onPlayPressed():
     global page, app

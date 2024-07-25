@@ -312,10 +312,113 @@ class MenuPage():
 class SettingsPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__(self.get_title(), previous_page, has_sub_page=True)
-        # self.
+        self.settings = self.get_content()
+        self.num_settings = len(self.settings)
 
     def get_title(self):
         return "Settings"
+    
+    def get_content(self):
+        return [
+                {
+                    "name": "Reboot",
+                    "id":0
+                },
+                {
+                    "name": "Poweroff",
+                    "id":1
+                },
+                {
+                    "name":"Other",
+                    "id":2
+                }
+            ]
+            
+
+    def total_size(self):
+        return self.num_settings
+    
+    def page_at(self, index):
+        # print("index",index)
+        #command = RebootCommand(lambda: print("rebooting"))
+        return SingleSettingPage(self.settings[index], self) #command=command
+        # return SingleShowPage(self.settings[index], self)
+
+class SingleSettingPage(MenuPage):
+    def __init__(self, setting, previous_page, command=None):
+        # self.command = command
+        super().__init__(setting["name"], previous_page, has_sub_page=False)
+        self.current_setting = setting
+        self.current_setting_name = self.current_setting["name"]
+        self.current_setting_id = self.current_setting["id"]
+        # print(self.current_setting, "asyy")
+        self.live_render = SettingsRendering(item=self.current_setting)
+        
+    # def get_content(self):
+    #     print("here")
+    #     return self.current_setting
+
+    # def page_at(self, index):
+    #     setting = self.get_content()[index]
+    #     print(setting, "as")
+    #     command = RebootCommand(lambda: print("pls"))
+    #     return command
+    
+    def render(self):
+        # if (not self.command.has_run):
+        #     self.command.run()
+        return self.live_render
+
+    # def get_title(self):
+    #     return setting["name"]
+    #
+    #def get_content(self):
+    #    return setting
+        
+# class RebootCommand():
+#     def __init__(self, runnable = lambda:()):
+#         self.has_run = False
+#         self.runnable = runnable
+    
+#     def run(self):
+#         self.has_run = True
+#         self.runnable()
+
+
+class SettingsRendering(Rendering):
+    def __init__(self, item):
+        super().__init__(SETTINGS_RENDER)
+        self.callback = None
+        self.after_id = None
+        self.current_page = item
+        # print(self.current_page)
+
+    def subscribe(self, app, callback):
+        if callback == self.callback:
+            return
+        new_callback = self.callback is None
+        self.callback = callback
+        self.app = app
+        if new_callback:
+            self.refresh()
+
+    def refresh(self):
+        if not self.callback:
+           return
+        if self.current_page:
+            self.callback(self.current_page)
+        #if self.after_id:
+        #    self.app.after_cancel(self.after_id)
+        # self.callback(spotify_manager.DATASTORE.now_playing)
+        # self.after_id = self.app.after(500, lambda: self.refresh())
+
+    def unsubscribe(self):
+        super().unsubscribe()
+        self.callback = None
+        self.app = None
+
+
+
 
 class ShowsPage(MenuPage):
     def __init__(self, previous_page):
@@ -537,14 +640,20 @@ class SavedTracksPage(MenuPage):
         return SingleTrackPage(spotify_manager.DATASTORE.getSavedTrack(index), self)
 
 class PlaceHolderPage(MenuPage):
-    def __init__(self, header, previous_page, has_sub_page=True, is_title = False):
+    def __init__(self, header, previous_page, has_sub_page=True, is_title = False, command = None):
         super().__init__(header, previous_page, has_sub_page, is_title)
+        self.command = command
+        
+
+    # def render(self):
+    #     if (not self.command.has_run):
+    #         self.command.run()
+    #     return self.live_render
 
 class RootPage(MenuPage):
     def __init__(self, previous_page):
         super().__init__("sPot", previous_page, has_sub_page=True)
         self.pages = [
-            NowPlayingPage(self, "Now Playing", NowPlayingCommand()),
             ArtistsPage(self),
             AlbumsPage(self),
             NewReleasesPage(self),
@@ -552,13 +661,14 @@ class RootPage(MenuPage):
             ShowsPage(self),
             SearchPage(self),
             SettingsPage(self),
+            NowPlayingPage(self, "Now Playing", NowPlayingCommand()),
         ]
         self.index = 0
         self.page_start = 0
     
     def get_pages(self):
         if (not spotify_manager.DATASTORE.now_playing):
-            return self.pages[1:-1] #starts at 1, because NowPlayingPage is the first entry in pages array
+            return self.pages[0:-1] #starts at 1, because NowPlayingPage is the first entry in pages array
         return self.pages
     
     def total_size(self):
