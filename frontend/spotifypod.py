@@ -13,7 +13,9 @@ from view_model import *
 from PIL import ImageTk, Image
 from sys import platform
 import os
-import distro   
+import distro
+
+import subprocess
   
 LARGEFONT =("ChicagoFLF", 90) 
 MED_FONT =("ChicagoFLF", 70) 
@@ -66,6 +68,20 @@ def system_reboot():
 
 def system_poweroff():
     os.system("shutdown -h now")
+
+def system_restart_raspotify():
+    os.system("sudo systemctl enable raspotify")
+    os.system("sudo systemctl restart raspotify")
+    enabled = subprocess.run(["sudo", "systemctl", "is-enabled", "raspotify"], check=True, capture_output=True, text=True).stdout
+    active = subprocess.run(["sudo", "systemctl", "is-active", "raspotify"], check=True, capture_output=True, text=True).stdout
+
+    # os.system("sudo systemctl is-enabled raspotify")
+    # os.system("sudo systemctl is-active raspotify")
+    # print(enabled)
+    # print(active)
+    if enabled.strip() == "enabled".strip() and active.strip() == "active".strip():
+        return True
+    return False
 
 
 def flattenAlpha(img):
@@ -251,6 +267,8 @@ class SearchFrame(tk.Frame):
 class SettingsFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.is_raspotify_running = False
+
         self.configure(bg=SPOT_BLACK)
         self.grid_columnconfigure(0, weight=1)
 
@@ -265,19 +283,40 @@ class SettingsFrame(tk.Frame):
         self.header_label = Marquee(contentFrame, text="Non", fontOffset=0)
         self.header_label.grid(sticky="we", padx=(0, 10))
 
+        mainContentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
+        mainContentFrame.grid(row=3, column=0, sticky="nswe")
+        mainContentFrame.grid_columnconfigure(0, weight=1) 
+        self.main_label = Marquee(mainContentFrame, text="No Text", fontOffset=0)
+        self.main_label.grid(sticky="we", padx=(0, 10))
+        self.main_label2 = Marquee(mainContentFrame, text="No Text", fontOffset=0)
+        self.main_label2.grid(sticky="we", padx=(0, 10))
+
     def update_settings(self, updated_info):
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
         
-        print(self.current_setting)
         self.header_label.set_text(self.current_setting_name)
+        # print(self.current_setting)
         if self.current_setting_id == 0:
+            print("restarting raspotify")
+            is_raspotify_running = system_restart_raspotify()
+            if is_raspotify_running == True:
+                self.main_label.set_text("Finished")
+                self.main_label2.set_text("Raspotify is running")
+
+        elif self.current_setting_id == 1:
             print("rebooting now")
             system_reboot()
-        elif self.current_setting_id == 1:
+        elif self.current_setting_id == 2:
             print("Shutting down now")
             system_poweroff()
+            
+        elif self.current_setting_id == 3:
+            self.main_label.set_text("")
+            self.main_label2.set_text("")
+
+            
 
 
 class NowPlayingFrame(tk.Frame): 

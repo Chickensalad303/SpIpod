@@ -321,16 +321,20 @@ class SettingsPage(MenuPage):
     def get_content(self):
         return [
                 {
-                    "name": "Reboot",
+                    "name": "Restart Raspotify",
                     "id":0
                 },
                 {
-                    "name": "Poweroff",
+                    "name": "Reboot",
                     "id":1
                 },
                 {
-                    "name":"Other",
+                    "name": "Poweroff",
                     "id":2
+                },
+                {
+                    "name":"Other",
+                    "id":3
                 }
             ]
             
@@ -652,7 +656,7 @@ class PlaceHolderPage(MenuPage):
 
 class RootPage(MenuPage):
     def __init__(self, previous_page):
-        super().__init__("sPot", previous_page, has_sub_page=True)
+        super().__init__("SpIpod", previous_page, has_sub_page=True)
         self.pages = [
             ArtistsPage(self),
             AlbumsPage(self),
