@@ -89,19 +89,26 @@ def system_get_brightness():
     with open(dev_brightness_path, "r") as file:
         current_system_brightness = file.read()
         file.close()
-    #have to strip due to invis chars causing it to be displayed wierd
-    return float(current_system_brightness)
+    return int(current_system_brightness)
 
-def system_change_brightness():
+def system_change_brightness(new_val):
     # brightness values ranges from 0 to 255
     #divide 255 into parts of 10 (so, basically in increments of 25.5)
-
-
+    #must be int
 
     #set new brightness (this is for my local dev setup)
     dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
-    with open(dev_brightness_path, "w") as file:
-        file.write("204")
+    val = int(new_val)
+    curr_val = system_get_brightness()
+    print(val, "vs", curr_val)
+    if val == curr_val:
+        return False
+    if val >= 0 and val <= 255:
+        with open(dev_brightness_path, "w") as file:
+            file.write(f"{val}")
+            file.close
+        return True
+    return False
 
 
 def flattenAlpha(img):
@@ -340,7 +347,7 @@ class SettingsFrame(tk.Frame):
             # (for my display/ui setup doing -30.5 makes the playback bar work but 
             # its stoopid)
             self.midpoint = self.frame_img.width() / 2
-            print("this is midpoint of playback bar", self.midpoint)
+            # print("this is midpoint of playback bar", self.midpoint)
             self.progress_width = self.frame_img.width()
             self.progress_start_x = self.midpoint - self.progress_width / 2 -1 #why the -1, idk somehow is related to janky solution for padding_offset, but it works on my screen i guess
             self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
@@ -348,7 +355,7 @@ class SettingsFrame(tk.Frame):
 
             self.max_brightness_val = 255
             self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
-            print(self.current_normalized_brightness, "vs", self.progress_start_x)
+            # print(self.current_normalized_brightness, "vs", self.progress_start_x)
             
             # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
             self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * self.current_normalized_brightness + self.progress_start_x, int(72 * SCALE))
@@ -356,6 +363,7 @@ class SettingsFrame(tk.Frame):
 
 
     def update_settings(self, updated_info):
+        self.callback = False
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
@@ -365,6 +373,15 @@ class SettingsFrame(tk.Frame):
         if self.current_setting_id == 0:
             print("set brightness")
             self.update_brightness()
+
+            # u = onUpPressed()
+            # print(u, "jere")
+            self.data = socket.recv(128)
+            self.wheel_pos = slider_input(self.data, 5)
+            #here translate wheel pos into val between 0 to 255
+
+
+            self.callback = system_change_brightness(20)
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
@@ -383,7 +400,8 @@ class SettingsFrame(tk.Frame):
         elif self.current_setting_id == 4:
             self.main_label.set_text("")
             self.main_label2.set_text("")
-
+        
+        return self.callback
             
 
 
@@ -604,6 +622,40 @@ class StartPage(tk.Frame):
         arrow.configure(background=bgColor, image=arrowImg)
         arrow.image = arrowImg
 
+        
+def slider_input(input, nth):
+    # nth is for in how many equal parts the range should be split up in
+    # eg nth=10, every 10th position on the wheel will be registered
+    # the clickwheel goes from 1 to 44
+    global wheel_position, last_button, last_interaction
+    position = input[2]
+    button = input[0]
+    button_state = input[1]
+
+    if button == 29 and button_state == 0:
+        wheel_position = -1
+    elif wheel_position == -1:
+        wheel_position = position
+    elif position % nth != 0:
+        pass
+    print(wheel_position)
+    # idk think this needed
+    # elif wheel_position <=1 and position > 44:
+    #     onDownPressed()
+    #     wheel_position = position
+    # elif wheel_position >=44 and position < 1:
+    #     onUpPressed()
+    #     wheel_position = position
+    # elif abs(wheel_position - position) > 6:
+    #     wheel_position = -1
+    # elif wheel_position > position:
+    #     onDownPressed()
+    #     wheel_position = position
+    # elif wheel_position < position:
+    #     onUpPressed()
+    #     wheel_position = position
+        
+
 def processInput(app, input):
     global wheel_position, last_button, last_interaction
     position = input[2]
@@ -696,9 +748,19 @@ def render_search(app, search_render):
 
 
 def update_settings(setting):
+    global app, page
     frame = app.frames[SettingsFrame]
-    # print(setting)
-    frame.update_settings(setting)
+    # check if were on brightness page
+    sett_id = setting["id"]
+    c = frame.update_settings(setting)
+    print(c)
+    if sett_id == 0:
+        if (c != False):
+            page.render().subscribe(app, update_settings)
+            app.show_frame(SettingsFrame)
+            page = SingleSettingPage(setting, page)
+            render(app, page.render())
+            # time.sleep(5)
 
 def render_settings(app, settings_render):
     app.show_frame(SettingsFrame)
