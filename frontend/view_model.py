@@ -321,20 +321,24 @@ class SettingsPage(MenuPage):
     def get_content(self):
         return [
                 {
-                    "name": "Restart Raspotify",
-                    "id":0
+                    "name": "Brightness",
+                    "id": 0
                 },
                 {
-                    "name": "Reboot",
+                    "name": "Restart Raspotify",
                     "id":1
                 },
                 {
-                    "name": "Poweroff",
+                    "name": "Reboot",
                     "id":2
                 },
                 {
-                    "name":"Other",
+                    "name": "Poweroff",
                     "id":3
+                },
+                {
+                    "name":"Other",
+                    "id":4
                 }
             ]
             
@@ -344,9 +348,9 @@ class SettingsPage(MenuPage):
     
     def page_at(self, index):
         # print("index",index)
-        #command = RebootCommand(lambda: print("rebooting"))
+        #command = None
         return SingleSettingPage(self.settings[index], self) #command=command
-        # return SingleShowPage(self.settings[index], self)
+
 
 class SingleSettingPage(MenuPage):
     def __init__(self, setting, previous_page, command=None):
@@ -357,36 +361,13 @@ class SingleSettingPage(MenuPage):
         self.current_setting_id = self.current_setting["id"]
         # print(self.current_setting, "asyy")
         self.live_render = SettingsRendering(item=self.current_setting)
-        
-    # def get_content(self):
-    #     print("here")
-    #     return self.current_setting
 
-    # def page_at(self, index):
-    #     setting = self.get_content()[index]
-    #     print(setting, "as")
-    #     command = RebootCommand(lambda: print("pls"))
-    #     return command
-    
     def render(self):
         # if (not self.command.has_run):
         #     self.command.run()
         return self.live_render
 
-    # def get_title(self):
-    #     return setting["name"]
-    #
-    #def get_content(self):
-    #    return setting
         
-# class RebootCommand():
-#     def __init__(self, runnable = lambda:()):
-#         self.has_run = False
-#         self.runnable = runnable
-    
-#     def run(self):
-#         self.has_run = True
-#         self.runnable()
 
 
 class SettingsRendering(Rendering):

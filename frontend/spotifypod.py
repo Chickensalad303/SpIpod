@@ -83,6 +83,26 @@ def system_restart_raspotify():
         return True
     return False
 
+def system_get_brightness():
+    dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
+    current_system_brightness = None
+    with open(dev_brightness_path, "r") as file:
+        current_system_brightness = file.read()
+        file.close()
+    #have to strip due to invis chars causing it to be displayed wierd
+    return float(current_system_brightness)
+
+def system_change_brightness():
+    # brightness values ranges from 0 to 255
+    #divide 255 into parts of 10 (so, basically in increments of 25.5)
+
+
+
+    #set new brightness (this is for my local dev setup)
+    dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
+    with open(dev_brightness_path, "w") as file:
+        file.write("204")
+
 
 def flattenAlpha(img):
     global SCALE
@@ -291,6 +311,50 @@ class SettingsFrame(tk.Frame):
         self.main_label2 = Marquee(mainContentFrame, text="No Text", fontOffset=0)
         self.main_label2.grid(sticky="we", padx=(0, 10))
 
+
+        self.brightnessFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
+        self.brightnessFrame.grid(row=4, column=0, sticky="nswe")
+        self.brightnessFrame.grid_columnconfigure(0, weight=1) 
+
+        self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
+        self.update()
+        self.padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
+        # self.padding_offset = 25 for this offset im just tryign random shit
+        self.padding_offset = (self.winfo_reqwidth() - self.frame_img.width()) / 1.5 * SCALE
+        
+        print(self.padding_offset, "\n", self.winfo_reqwidth(), self.frame_img.width())
+
+
+    def update_brightness(self):
+        parent_width = self.winfo_width()
+        if parent_width > 2:
+            # this is straight up copied from NowPlayingFrame, just made interactive
+            self.progress_frame = tk.Canvas(self.brightnessFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)        
+            self.progress_frame.grid(row=4, column=0, sticky="wens", pady=(int(52 * SCALE), 0), padx=(self.padding_offset, 0))
+
+
+            self.current_brightness = system_get_brightness()
+            self.main_label.set_text(f"{self.current_brightness}")
+            self.main_label2.set_text("")
+            # somehow implement padding offset so don't have to use random value 
+            # (for my display/ui setup doing -30.5 makes the playback bar work but 
+            # its stoopid)
+            self.midpoint = self.frame_img.width() / 2
+            print("this is midpoint of playback bar", self.midpoint)
+            self.progress_width = self.frame_img.width()
+            self.progress_start_x = self.midpoint - self.progress_width / 2 -1 #why the -1, idk somehow is related to janky solution for padding_offset, but it works on my screen i guess
+            self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
+            self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
+
+            self.max_brightness_val = 255
+            self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
+            print(self.current_normalized_brightness, "vs", self.progress_start_x)
+            
+            # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
+            self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * self.current_normalized_brightness + self.progress_start_x, int(72 * SCALE))
+
+
+
     def update_settings(self, updated_info):
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
@@ -299,20 +363,24 @@ class SettingsFrame(tk.Frame):
         self.header_label.set_text(self.current_setting_name)
         # print(self.current_setting)
         if self.current_setting_id == 0:
+            print("set brightness")
+            self.update_brightness()
+
+        elif self.current_setting_id == 1:
             print("restarting raspotify")
             is_raspotify_running = system_restart_raspotify()
             if is_raspotify_running == True:
                 self.main_label.set_text("Finished")
                 self.main_label2.set_text("Raspotify is running")
 
-        elif self.current_setting_id == 1:
+        elif self.current_setting_id == 2:
             print("rebooting now")
             system_reboot()
-        elif self.current_setting_id == 2:
+        elif self.current_setting_id == 3:
             print("Shutting down now")
             system_poweroff()
             
-        elif self.current_setting_id == 3:
+        elif self.current_setting_id == 4:
             self.main_label.set_text("")
             self.main_label2.set_text("")
 

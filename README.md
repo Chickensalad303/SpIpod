@@ -1,4 +1,12 @@
-## Reminder to self: comment out framebuffer part of /boot/config.txt, this is only used for testing via vnc viewer
+## Reminder to self: comment out framebuffer part of /boot/config.txt, this is only used for testing via vnc viewer 
+\
+## And on dev build add chmod 766, so spotifypod.py can change brightness
+## on my device, the dir to edit brightness is:
+\
+## /sys/class/backlight/amdgpu_bl0/brightness
+\
+## on rpi /sys/class/backlight/rpi_backlight/brightness
+
 I'm using a ipod classic from 2004 (A1059)
 
 # sPot
