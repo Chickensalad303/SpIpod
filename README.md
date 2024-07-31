@@ -38,7 +38,7 @@ sudo apt-get install python3-pip python-dev
 
 sudo apt-get install realvnc-vnc-server
 
-
+python-pigpio python3-pigpio
 
 sudo apt install python-setuptools python3-setuptools
 
@@ -147,6 +147,8 @@ Add these lines before `exit` in the file:
 ```
 # Start display driver
 /home/pi/fbcp-ili9341/build/fbcp-ili9341 &
+#in here also make pigpio daeomon run on startup
+sudo pigpiod
 ```
 
 Now just save and close. Thats it, now the driver should be installed and run on boot.
