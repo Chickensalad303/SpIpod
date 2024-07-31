@@ -11,6 +11,8 @@
 #include <arpa/inet.h> 
 #include <netinet/in.h> 
 
+#define BACKLIGHT_PIN 18
+
 #define CLOCK_PIN 23
 //changed DATA from 25 to 22
 #define DATA_PIN 22
@@ -159,7 +161,6 @@ void onDataEdge(int gpio, int level, uint32_t tick) {
 }
 
 int main(void *args){
-  
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
         perror("socket creation failed"); 
@@ -175,6 +176,11 @@ int main(void *args){
     if (gpioInitialise() < 0) {
        exit(1);
     }
+
+    //not using this code, since ill be using the pigpio python module to change brightness from there
+    // range is 0-1024
+    //gpioSetPWMrange(BACKLIGHT_PIN, 1024);
+    //gpioPWM(BACKLIGHT_PIN, 1024);
 
     // haptic waveform - just a simple on-off pulse
     gpioSetMode(HAPTIC_PIN, PI_OUTPUT);

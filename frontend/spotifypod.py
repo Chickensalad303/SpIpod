@@ -16,7 +16,10 @@ import os
 import distro
 
 import subprocess
-  
+import pigpio
+
+BACKLIGHT_PIN = 18
+
 LARGEFONT =("ChicagoFLF", 90) 
 MED_FONT =("ChicagoFLF", 70) 
 SCALE = 1
@@ -83,32 +86,62 @@ def system_restart_raspotify():
         return True
     return False
 
-def system_get_brightness():
-    dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
-    current_system_brightness = None
-    with open(dev_brightness_path, "r") as file:
-        current_system_brightness = file.read()
-        file.close()
-    return int(current_system_brightness)
+#this works on rpi zero 2 W idk aboot the others
+def is_rpi():
+    active = subprocess.run(["sudo", "uname", "-m"], check=True, capture_output=True, text=True).stdout
+    if active.strip() == "armv7l".strip():
+        return True
+    return False
 
+def system_get_brightness():
+    print("is running on rpi:", is_rpi())
+    if is_rpi():
+        pigpi = pigpio.pi()
+        current_sys_brightness = pigpi.get_PWM_dutycycle(BACKLIGHT_PIN)
+        return int(current_sys_brightness)
+    #dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
+    #current_system_brightness = None
+    #with open(dev_brightness_path, "r") as file:
+    #    current_system_brightness = file.read()
+    #    file.close()
+    #return int(current_system_brightness)
+
+    
 def system_change_brightness(new_val):
     # brightness values ranges from 0 to 255
     #divide 255 into parts of 10 (so, basically in increments of 25.5)
     #must be int
 
     #set new brightness (this is for my local dev setup)
-    dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
-    val = int(new_val)
-    curr_val = system_get_brightness()
-    print(val, "vs", curr_val)
-    if val == curr_val:
-        return False
-    if val >= 0 and val <= 255:
-        with open(dev_brightness_path, "w") as file:
-            file.write(f"{val}")
-            file.close
+    #dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
+    #val = int(new_val)
+    #curr_val = system_get_brightness()
+    #print(val, "vs", curr_val)
+    
+    #here brightness values between 25 - 1024 according to docs, but in test 0-1024 worked too, so idk just assume the range 0-1024
+    if is_rpi():
+        pigpi = pigpio.pi()
+        pigpi.set_PWM_range(BACKLIGHT_PIN, 1024)
+        val = int(new_val)
+        try:
+            current_val = system_get_brightness()
+            if val == current_val:
+                return False
+            pigpi.set_PWM_dutycycle(BACKLIGHT_PIN, val)
+        except:
+            pigpi.set_PWM_dutycycle(BACKLIGHT_PIN, val)
+        #pigpi.stop()
         return True
     return False
+
+    #if val == curr_val:
+    #    return False
+    #if val >= 0 and val <= 255:
+    #    with open(dev_brightness_path, "w") as file:
+    #        file.write(f"{val}")
+    #        file.close
+    #    return True
+    #return False
 
 
 def flattenAlpha(img):
@@ -353,7 +386,7 @@ class SettingsFrame(tk.Frame):
             self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
             self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
 
-            self.max_brightness_val = 255
+            self.max_brightness_val = 1024 #255 on old dev environment, on rpi its 1024
             self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
             # print(self.current_normalized_brightness, "vs", self.progress_start_x)
             
@@ -372,16 +405,28 @@ class SettingsFrame(tk.Frame):
         # print(self.current_setting)
         if self.current_setting_id == 0:
             print("set brightness")
+
             self.update_brightness()
 
-            # u = onUpPressed()
-            # print(u, "jere")
-            self.data = socket.recv(128)
-            self.wheel_pos = slider_input(self.data, 5)
+            # this bit only works if click.c is running. edit: actually wrong
+            #sock = socket.socket(socket.AF_INET, # Internet
+            #         socket.SOCK_DGRAM) # UDP
+            #sock.bind((UDP_IP, UDP_PORT))
+            #sock.setblocking(0)
+            #socket_list = [sock]
+            #try:
+            #    read_sockets = select(socket_list, [], [], 0)[0]
+            #    for socket in read_sockets:
+                    #self.data = socket.recv(128)
+                    #self.wheel_pos = slider_input(self.data, 5)
+                    #print("data:", self.data)
+                    #print("wheel_position:", self.wheel_pos)
+            #        print("try")
+            #except:
+            #    pass
             #here translate wheel pos into val between 0 to 255
-
-
-            self.callback = system_change_brightness(20)
+            
+            self.callback = system_change_brightness(1024)
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
@@ -753,7 +798,7 @@ def update_settings(setting):
     # check if were on brightness page
     sett_id = setting["id"]
     c = frame.update_settings(setting)
-    print(c)
+    print("update settings callback:", c)
     if sett_id == 0:
         if (c != False):
             page.render().subscribe(app, update_settings)
@@ -845,6 +890,9 @@ def onDownPressed():
     global page, app
     page.nav_down()
     render(app, page.render())
+
+#init display brightness
+system_change_brightness(1024)
 
 # Driver Code 
 page = RootPage(None)
