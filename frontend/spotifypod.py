@@ -19,7 +19,8 @@ import subprocess
 import pigpio
 
 BACKLIGHT_PIN = 18
-ACTIVATE_SLIDER = False
+ACTIVATE_BRIGHTNESS_SLIDER = False
+SLIDER_WHEEL_DATA = None
 
 LARGEFONT =("ChicagoFLF", 90) 
 MED_FONT =("ChicagoFLF", 70) 
@@ -388,6 +389,7 @@ class SettingsFrame(tk.Frame):
             self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
 
             self.max_brightness_val = 1024 #255 on old dev environment, on rpi its 1024
+            #i know this ist a normalized val or the correct func, bobo brain still decided to call it taht
             self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
             # print(self.current_normalized_brightness, "vs", self.progress_start_x)
             
@@ -401,20 +403,21 @@ class SettingsFrame(tk.Frame):
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
+        #self.new_brightness_val = self.current_setting["brightness_val"]
         
         self.header_label.set_text(self.current_setting_name)
         # print(self.current_setting)
         if self.current_setting_id == 0:
             print("set brightness")
+
+            #system_change_brightness(self.new_brightness_val)
             self.update_brightness()
             
-            global ACTIVATE_SLIDER
-            ACTIVATE_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
+            self.callback = False
+            global ACTIVATE_BRIGHTNESS_SLIDER
+            ACTIVATE_BRIGHTNESS_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
             # then inside wherever input is processed, make it so when the back button is pressed, change back to False
 
-    
-            #here translate wheel pos into val between 0 to 255
-            system_change_brightness(1024)
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
@@ -656,23 +659,66 @@ class StartPage(tk.Frame):
         arrow.image = arrowImg
 
         
-def slider_input(input, nth):
+def slider_input(wheel_data, btn_state, last_btn, btn):
     # nth is for in how many equal parts the range should be split up in
     # eg nth=10, every 10th position on the wheel will be registered
-    # the clickwheel goes from 1 to 44
-    global wheel_position, last_button, last_interaction, ACTIVATE_SLIDER
-    position = input[2]
-    button = input[0]
-    button_state = input[1]
+    # the clickwheel goes from 0 to 47
+    #global wheel_position, last_button, last_interaction, ACTIVATE_BRIGHTNESS_SLIDER, SLIDER_WHEEL_DATA
+    global ACTIVATE_BRIGHTNESS_SLIDER, last_interaction, last_button, app, page
+    button_state = btn_state
+    #last_button = last_btn
+    button = btn
+    position = wheel_data
+    
+    # get modulo operator to convert range 0-47 to steps of 10
+    #odulo_op = 10 / 47
+    #print(modulo_op)
+    if position % 5 == 0:
+        # highest clickwheel val can be 47, lowest 0
+        normalized_wheel_pos = position / 47
+        #scale normalized wheel pos to range 0 - 1024, then use value in system_change_brightness(val)
+        scaled_normalized_wheel_pos = normalized_wheel_pos * 1024
+        print("slider:", normalized_wheel_pos, "vs:",scaled_normalized_wheel_pos)
+        system_change_brightness(scaled_normalized_wheel_pos)
+        #render(app, page.render())
+        #render_settings(app, page.render())
+        
+        #print(app.frames)
+        frame = app.frames[SettingsFrame]
+        # check if were on brightness page
+        c = frame.update_settings(
+                {
+                    "name": "Brightness",
+                    "id": 0
+                })
 
-    if button == 29 and button_state == 0:
-        wheel_position = -1
-    elif wheel_position == -1:
-        wheel_position = position
-    elif position % nth != 0:
-        pass
-    print("from slider input:", wheel_position)
 
+    
+    # 1/10 of range = 4.7
+    #t = 47 / position / 100
+
+
+
+
+    #ten_percent = 47 * 10 / 100
+    #print(ten_percent)
+    #normalized_ten_percent = 0.1
+
+    #print(scaled_normalized_wheel_pos // 102)
+
+
+    #position = input[2]
+    #button = input[0]
+    #button_state = input[1]
+
+    #if button == 29 and button_state == 0:
+    #    wheel_position = -1
+    #elif wheel_position == -1:
+    #    wheel_position = position
+    #elif position % 2 != 0:
+    #    pass
+    #print("from slider input:", wheel_position)
+    
     if button_state == 0:
         last_button = -1
     elif button == last_button:
@@ -680,7 +726,7 @@ def slider_input(input, nth):
     elif button == 11:
         onBackPressed()
         last_button = button
-        ACTIVATE_SLIDER = False
+        ACTIVATE_BRIGHTNESS_SLIDER = False
 
 
     now = time.time()
@@ -688,6 +734,10 @@ def slider_input(input, nth):
         print("waking")
         screen_wake()
     last_interaction = now
+
+    #system_change_brightness(scaled_normalized_wheel_pos)
+    #SLIDER_WHEEL_DATA = wheel_position
+    #print(SLIDER_WHEEL_DATA)
 
     # idk think this needed
     # elif wheel_position <=1 and position > 44:
@@ -711,12 +761,6 @@ def processInput(app, input):
     position = input[2]
     button = input[0]
     button_state = input[1]
-    
-    global ACTIVATE_SLIDER
-    print("slider state:", ACTIVATE_SLIDER)
-    if ACTIVATE_SLIDER == True:
-        slider_input(input, 5)
-        return
 
     if button == 29 and button_state == 0:
         wheel_position = -1
@@ -724,6 +768,13 @@ def processInput(app, input):
         wheel_position = position
     elif position % 2 != 0:
         pass
+    
+    global ACTIVATE_BRIGHTNESS_SLIDER
+    #print("slider state:", ACTIVATE_BRIGHTNESS_SLIDER)
+    if ACTIVATE_BRIGHTNESS_SLIDER == True:
+        slider_input(position, input[1], last_button, input[0])
+        return
+
     
     elif wheel_position <=1 and position > 44:
         onDownPressed()
