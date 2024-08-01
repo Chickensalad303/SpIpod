@@ -87,9 +87,7 @@ gcc -Wall -pthread -o click click.c -lpigpio -lrt
 to compole click.c \
 then run `sudo ./click &` so you can test the clickwheel (assuming the wiring is done)
 \
-now just make sure the pigpio daeomon will autostart on boot\
-`sudo systemctl enable pigpiod`\
-`sudo systemctl restart pigpiod`
+now just make sure the pigpio daemon that the spotifypod.py script will need is the one that is started by `sudo ./click &` do not manually start or enable it with systemctl etc. that would cause multiple instances of pigpiod
 
 # Display setup
 I used a 2 inch model [waveshare ST7789V](https://www.amazon.de/Waveshare-Resolution-Interface-Examples-Raspberry/dp/B081Q79X2F) display
