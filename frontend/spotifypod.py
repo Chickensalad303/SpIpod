@@ -19,6 +19,7 @@ import subprocess
 import pigpio
 
 BACKLIGHT_PIN = 18
+ACTIVATE_SLIDER = False
 
 LARGEFONT =("ChicagoFLF", 90) 
 MED_FONT =("ChicagoFLF", 70) 
@@ -405,28 +406,15 @@ class SettingsFrame(tk.Frame):
         # print(self.current_setting)
         if self.current_setting_id == 0:
             print("set brightness")
-
             self.update_brightness()
-
-            # this bit only works if click.c is running. edit: actually wrong
-            #sock = socket.socket(socket.AF_INET, # Internet
-            #         socket.SOCK_DGRAM) # UDP
-            #sock.bind((UDP_IP, UDP_PORT))
-            #sock.setblocking(0)
-            #socket_list = [sock]
-            #try:
-            #    read_sockets = select(socket_list, [], [], 0)[0]
-            #    for socket in read_sockets:
-                    #self.data = socket.recv(128)
-                    #self.wheel_pos = slider_input(self.data, 5)
-                    #print("data:", self.data)
-                    #print("wheel_position:", self.wheel_pos)
-            #        print("try")
-            #except:
-            #    pass
-            #here translate wheel pos into val between 0 to 255
             
-            self.callback = system_change_brightness(1024)
+            global ACTIVATE_SLIDER
+            ACTIVATE_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
+            # then inside wherever input is processed, make it so when the back button is pressed, change back to False
+
+    
+            #here translate wheel pos into val between 0 to 255
+            system_change_brightness(1024)
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
@@ -672,7 +660,7 @@ def slider_input(input, nth):
     # nth is for in how many equal parts the range should be split up in
     # eg nth=10, every 10th position on the wheel will be registered
     # the clickwheel goes from 1 to 44
-    global wheel_position, last_button, last_interaction
+    global wheel_position, last_button, last_interaction, ACTIVATE_SLIDER
     position = input[2]
     button = input[0]
     button_state = input[1]
@@ -683,7 +671,24 @@ def slider_input(input, nth):
         wheel_position = position
     elif position % nth != 0:
         pass
-    print(wheel_position)
+    print("from slider input:", wheel_position)
+
+    if button_state == 0:
+        last_button = -1
+    elif button == last_button:
+        pass
+    elif button == 11:
+        onBackPressed()
+        last_button = button
+        ACTIVATE_SLIDER = False
+
+
+    now = time.time()
+    if (now - last_interaction > SCREEN_TIMEOUT_SECONDS):
+        print("waking")
+        screen_wake()
+    last_interaction = now
+
     # idk think this needed
     # elif wheel_position <=1 and position > 44:
     #     onDownPressed()
@@ -699,19 +704,27 @@ def slider_input(input, nth):
     # elif wheel_position < position:
     #     onUpPressed()
     #     wheel_position = position
-        
+
 
 def processInput(app, input):
     global wheel_position, last_button, last_interaction
     position = input[2]
     button = input[0]
     button_state = input[1]
+    
+    global ACTIVATE_SLIDER
+    print("slider state:", ACTIVATE_SLIDER)
+    if ACTIVATE_SLIDER == True:
+        slider_input(input, 5)
+        return
+
     if button == 29 and button_state == 0:
         wheel_position = -1
     elif wheel_position == -1:
         wheel_position = position
     elif position % 2 != 0:
         pass
+    
     elif wheel_position <=1 and position > 44:
         onDownPressed()
         wheel_position = position
@@ -727,6 +740,7 @@ def processInput(app, input):
         onUpPressed()
         wheel_position = position
     
+
     if button_state == 0:
         last_button = -1
     elif button == last_button:
@@ -807,6 +821,7 @@ def update_settings(setting):
             render(app, page.render())
             # time.sleep(5)
 
+
 def render_settings(app, settings_render):
     app.show_frame(SettingsFrame)
     settings_render.subscribe(app, update_settings)
@@ -849,6 +864,7 @@ def render(app, render):
         render_search(app, render)
     elif (render.type == SETTINGS_RENDER):
         render_settings(app, render)
+        
 
 def onPlayPressed():
     global page, app
