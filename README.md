@@ -64,7 +64,7 @@ then set redis-server to start on boot, which it does automatically but on some 
 & do this: \
 `sudo service redis-server start` \
 do the same for raspotify in later steps after it has been installed: \
-`sudo systemctl enable raspotify`
+`sudo systemctl enable raspotify` \
 
 
 
@@ -86,7 +86,10 @@ gcc -Wall -pthread -o click click.c -lpigpio -lrt
 ```
 to compole click.c \
 then run `sudo ./click &` so you can test the clickwheel (assuming the wiring is done)
-
+\
+now just make sure the pigpio daeomon will autostart on boot\
+`sudo systemctl enable pigpiod`\
+`sudo systemctl restart pigpiod`
 
 # Display setup
 I used a 2 inch model [waveshare ST7789V](https://www.amazon.de/Waveshare-Resolution-Interface-Examples-Raspberry/dp/B081Q79X2F) display
