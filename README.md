@@ -38,7 +38,7 @@ sudo apt-get install python3-pip python-dev
 
 sudo apt-get install realvnc-vnc-server
 
-python-pigpio python3-pigpio
+sudo apt install python-pigpio python3-pigpio
 
 sudo apt install python-setuptools python3-setuptools
 
