@@ -346,6 +346,32 @@ class SettingsFrame(tk.Frame):
 
 
     def update_brightness(self):
+        global wheel_position, SLIDER_WHEEL_DATA
+        print("click.c data:",SLIDER_WHEEL_DATA[2])
+        
+        self.position = SLIDER_WHEEL_DATA[2]
+        self.button = SLIDER_WHEEL_DATA[0]
+        self.button_state = SLIDER_WHEEL_DATA[1]
+
+        if self.button == 29 and self.button_state == 0:
+            wheel_position = -1
+        elif wheel_position == -1:
+            wheel_position = self.position
+        elif self.position % 5 == 0:
+
+            print("here run brightness code")
+            self.normalized_wheel_pos = self.position / 47
+            #scale normalized wheel pos to range 0 - 1024, then use value in system_change_brightness(val)
+            self.scaled_normalized_wheel_pos = self.normalized_wheel_pos * 1024
+            self.sys_bright = system_get_brightness()
+            print("slider:", self.sys_bright, "vs:",int(self.scaled_normalized_wheel_pos))
+
+            if self.sys_bright != int(self.scaled_normalized_wheel_pos):
+                app.after(2000, self.update_brightness())
+            
+        #self.update_brightness()
+        #system_change_brightness(scaled_normalized_wheel_pos)
+
         parent_width = self.winfo_width()
         if parent_width > 2:
             # this is straight up copied from NowPlayingFrame, just made interactive
@@ -373,6 +399,8 @@ class SettingsFrame(tk.Frame):
             
             # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
             self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * self.current_normalized_brightness + self.progress_start_x, int(72 * SCALE))
+            app.after(2000, self.update_brightness())
+            
 
 
 
@@ -382,7 +410,7 @@ class SettingsFrame(tk.Frame):
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
         #self.new_brightness_val = self.current_setting["brightness_val"]
-        
+        print(self.current_setting)
         self.header_label.set_text(self.current_setting_name)
         # print(self.current_setting)
         if self.current_setting_id == 0:
@@ -399,8 +427,8 @@ class SettingsFrame(tk.Frame):
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
-            is_raspotify_running = system_restart_raspotify()
-            if is_raspotify_running == True:
+            self.is_raspotify_running = system_restart_raspotify()
+            if self.is_raspotify_running == True:
                 self.main_label.set_text("Finished")
                 self.main_label2.set_text("Raspotify is running")
 
@@ -794,14 +822,14 @@ def update_settings(setting):
     frame = app.frames[SettingsFrame]
     # check if were on brightness page
     sett_id = setting["id"]
-
-    # c = frame.update_settings(setting)
+    frame.update_settings(setting)
+    
     # print("update settings callback:", c)
-    if sett_id == 0:
-        page.render().subscribe(app, update_settings)
-        app.show_frame(SettingsFrame)
-        page = SingleSettingPage(setting, page)
-        render(app, page.render())
+    #if sett_id == 0:
+    #    page.render().subscribe(app, update_settings)
+    #    app.show_frame(SettingsFrame)
+    #    page = SingleSettingPage(setting, page)
+    #    render(app, page.render())
         # time.sleep(5)
 
 
@@ -891,7 +919,7 @@ def onDownPressed():
     render(app, page.render())
 
 #init display brightness
-system_change_brightness(1024)
+system_change_brightness(980)
 
 # Driver Code 
 page = RootPage(None)
