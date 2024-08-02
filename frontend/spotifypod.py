@@ -105,25 +105,8 @@ def system_get_brightness():
         pigpi = pigpio.pi()
         current_sys_brightness = pigpi.get_PWM_dutycycle(BACKLIGHT_PIN)
         return int(current_sys_brightness)
-    #dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
-    #current_system_brightness = None
-    #with open(dev_brightness_path, "r") as file:
-    #    current_system_brightness = file.read()
-    #    file.close()
-    #return int(current_system_brightness)
-
     
 def system_change_brightness(new_val):
-    # brightness values ranges from 0 to 255
-    #divide 255 into parts of 10 (so, basically in increments of 25.5)
-    #must be int
-
-    #set new brightness (this is for my local dev setup)
-    #dev_brightness_path = r"/sys/class/backlight/amdgpu_bl0/brightness"
-    #val = int(new_val)
-    #curr_val = system_get_brightness()
-    #print(val, "vs", curr_val)
-    
     #here brightness values between 25 - 1024 according to docs, but in test 0-1024 worked too, so idk just assume the range 0-1024
     if is_rpi():
         pigpi = pigpio.pi()
@@ -139,15 +122,6 @@ def system_change_brightness(new_val):
         #pigpi.stop()
         return True
     return False
-
-    #if val == curr_val:
-    #    return False
-    #if val >= 0 and val <= 255:
-    #    with open(dev_brightness_path, "w") as file:
-    #        file.write(f"{val}")
-    #        file.close
-    #    return True
-    #return False
 
 
 def flattenAlpha(img):
@@ -403,7 +377,7 @@ class SettingsFrame(tk.Frame):
 
 
     def update_settings(self, updated_info):
-        self.callback = False
+        #self.callback = False
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
@@ -417,9 +391,9 @@ class SettingsFrame(tk.Frame):
             #system_change_brightness(self.new_brightness_val)
             self.update_brightness()
             
-            self.callback = False
-            global ACTIVATE_BRIGHTNESS_SLIDER
-            ACTIVATE_BRIGHTNESS_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
+            #self.callback = False
+            # global ACTIVATE_BRIGHTNESS_SLIDER
+            # ACTIVATE_BRIGHTNESS_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
             # then inside wherever input is processed, make it so when the back button is pressed, change back to False
 
 
@@ -441,7 +415,7 @@ class SettingsFrame(tk.Frame):
             self.main_label.set_text("")
             self.main_label2.set_text("")
         
-        return self.callback
+        #return self.callback
             
 
 
@@ -696,33 +670,6 @@ def slider_input(wheel_data, btn_state, last_btn, btn):
                     "id": 0
                 })
 
-
-    
-    # 1/10 of range = 4.7
-    #t = 47 / position / 100
-
-
-
-
-    #ten_percent = 47 * 10 / 100
-    #print(ten_percent)
-    #normalized_ten_percent = 0.1
-
-    #print(scaled_normalized_wheel_pos // 102)
-
-
-    #position = input[2]
-    #button = input[0]
-    #button_state = input[1]
-
-    #if button == 29 and button_state == 0:
-    #    wheel_position = -1
-    #elif wheel_position == -1:
-    #    wheel_position = position
-    #elif position % 2 != 0:
-    #    pass
-    #print("from slider input:", wheel_position)
-    
     if button_state == 0:
         last_button = -1
     elif button == last_button:
@@ -739,25 +686,6 @@ def slider_input(wheel_data, btn_state, last_btn, btn):
         screen_wake()
     last_interaction = now
 
-    #system_change_brightness(scaled_normalized_wheel_pos)
-    #SLIDER_WHEEL_DATA = wheel_position
-    #print(SLIDER_WHEEL_DATA)
-
-    # idk think this needed
-    # elif wheel_position <=1 and position > 44:
-    #     onDownPressed()
-    #     wheel_position = position
-    # elif wheel_position >=44 and position < 1:
-    #     onUpPressed()
-    #     wheel_position = position
-    # elif abs(wheel_position - position) > 6:
-    #     wheel_position = -1
-    # elif wheel_position > position:
-    #     onDownPressed()
-    #     wheel_position = position
-    # elif wheel_position < position:
-    #     onUpPressed()
-    #     wheel_position = position
 
 
 def processInput(app, input):
@@ -773,11 +701,11 @@ def processInput(app, input):
     elif position % 2 != 0:
         pass
     
-    global ACTIVATE_BRIGHTNESS_SLIDER
-    #print("slider state:", ACTIVATE_BRIGHTNESS_SLIDER)
-    if ACTIVATE_BRIGHTNESS_SLIDER == True:
-        slider_input(position, input[1], last_button, input[0])
-        return
+    # global ACTIVATE_BRIGHTNESS_SLIDER
+    # #print("slider state:", ACTIVATE_BRIGHTNESS_SLIDER)
+    # if ACTIVATE_BRIGHTNESS_SLIDER == True:
+    #     slider_input(position, input[1], last_button, input[0])
+    #     return
 
     
     elif wheel_position <=1 and position > 44:
@@ -866,15 +794,15 @@ def update_settings(setting):
     frame = app.frames[SettingsFrame]
     # check if were on brightness page
     sett_id = setting["id"]
-    c = frame.update_settings(setting)
-    print("update settings callback:", c)
+
+    # c = frame.update_settings(setting)
+    # print("update settings callback:", c)
     if sett_id == 0:
-        if (c != False):
-            page.render().subscribe(app, update_settings)
-            app.show_frame(SettingsFrame)
-            page = SingleSettingPage(setting, page)
-            render(app, page.render())
-            # time.sleep(5)
+        page.render().subscribe(app, update_settings)
+        app.show_frame(SettingsFrame)
+        page = SingleSettingPage(setting, page)
+        render(app, page.render())
+        # time.sleep(5)
 
 
 def render_settings(app, settings_render):
@@ -979,12 +907,12 @@ socket_list = [sock]
 loop_count = 0
 
 def app_main_loop():
-    global app, page, loop_count, last_interaction, screen_on
+    global app, page, loop_count, last_interaction, screen_on, SLIDER_WHEEL_DATA
     try:
         read_sockets = select(socket_list, [], [], 0)[0]
         for socket in read_sockets:
-            data = socket.recv(128)
-            processInput(app, data)
+            SLIDER_WHEEL_DATA = socket.recv(128)
+            processInput(app, SLIDER_WHEEL_DATA)
         loop_count += 1
         if (loop_count >= 300):
             if (time.time() - last_interaction > SCREEN_TIMEOUT_SECONDS and screen_on):
