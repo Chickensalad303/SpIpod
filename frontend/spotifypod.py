@@ -16,7 +16,7 @@ import os
 import distro
 
 import subprocess
-import pigpio
+
 
 BACKLIGHT_PIN = 18
 ACTIVATE_BRIGHTNESS_SLIDER = False
@@ -47,6 +47,16 @@ SCREEN_TIMEOUT_SECONDS = 60
 
 wheel_position = -1
 last_button = -1
+
+#this works on rpi zero 2 W idk aboot the others
+def is_rpi():
+    active = subprocess.run(["sudo", "uname", "-m"], check=True, capture_output=True, text=True).stdout
+    if active.strip() == "armv7l".strip():
+        return True
+    return False
+
+if is_rpi() == True:
+    import pigpio
 
 #useful for debugging, like for when using vncviewer  
 def onQuitPressed():
@@ -88,12 +98,6 @@ def system_restart_raspotify():
         return True
     return False
 
-#this works on rpi zero 2 W idk aboot the others
-def is_rpi():
-    active = subprocess.run(["sudo", "uname", "-m"], check=True, capture_output=True, text=True).stdout
-    if active.strip() == "armv7l".strip():
-        return True
-    return False
 
 def system_get_brightness():
     print("is running on rpi:", is_rpi())
