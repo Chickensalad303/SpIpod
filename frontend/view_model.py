@@ -361,7 +361,9 @@ class SingleSettingPage(MenuPage):
         self.current_setting_id = self.current_setting["id"]
         # print(self.current_setting, "asyy")
         self.live_render = SettingsRendering(item=self.current_setting)
-
+    
+    def curr_sett(self):
+        return self.current_setting
     def render(self):
         # if (not self.command.has_run):
         #     self.command.run()

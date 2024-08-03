@@ -104,6 +104,7 @@ def system_get_brightness():
     if is_rpi():
         pigpi = pigpio.pi()
         current_sys_brightness = pigpi.get_PWM_dutycycle(BACKLIGHT_PIN)
+        pigpi.stop()
         return int(current_sys_brightness)
     
 def system_change_brightness(new_val):
@@ -119,7 +120,7 @@ def system_change_brightness(new_val):
             pigpi.set_PWM_dutycycle(BACKLIGHT_PIN, val)
         except:
             pigpi.set_PWM_dutycycle(BACKLIGHT_PIN, val)
-        #pigpi.stop()
+        pigpi.stop()
         return True
     return False
 
@@ -345,41 +346,20 @@ class SettingsFrame(tk.Frame):
         print(self.padding_offset, "\n", self.winfo_reqwidth(), self.frame_img.width())
 
 
-    def update_brightness(self):
-        global wheel_position, SLIDER_WHEEL_DATA
-        print("click.c data:",SLIDER_WHEEL_DATA[2])
-        
-        self.position = SLIDER_WHEEL_DATA[2]
-        self.button = SLIDER_WHEEL_DATA[0]
-        self.button_state = SLIDER_WHEEL_DATA[1]
-
-        if self.button == 29 and self.button_state == 0:
-            wheel_position = -1
-        elif wheel_position == -1:
-            wheel_position = self.position
-        elif self.position % 5 == 0:
-
-            print("here run brightness code")
-            self.normalized_wheel_pos = self.position / 47
-            #scale normalized wheel pos to range 0 - 1024, then use value in system_change_brightness(val)
-            self.scaled_normalized_wheel_pos = self.normalized_wheel_pos * 1024
-            self.sys_bright = system_get_brightness()
-            print("slider:", self.sys_bright, "vs:",int(self.scaled_normalized_wheel_pos))
-
-            if self.sys_bright != int(self.scaled_normalized_wheel_pos):
-                app.after(2000, self.update_brightness())
-            
-        #self.update_brightness()
-        #system_change_brightness(scaled_normalized_wheel_pos)
-
+    def update_brightness(self, ui_only_brightness = None):
         parent_width = self.winfo_width()
         if parent_width > 2:
             # this is straight up copied from NowPlayingFrame, just made interactive
             self.progress_frame = tk.Canvas(self.brightnessFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)        
             self.progress_frame.grid(row=4, column=0, sticky="wens", pady=(int(52 * SCALE), 0), padx=(self.padding_offset, 0))
 
+            if ui_only_brightness != None:
+                self.b = ui_only_brightness
+                self.current_brightness = int(self.b * 100 / 1024)
+            else:
+                self.b = system_get_brightness()
+                self.current_brightness = int(self.b * 100 / 1024)
 
-            self.current_brightness = system_get_brightness()
             self.main_label.set_text(f"{self.current_brightness}")
             self.main_label2.set_text("")
             # somehow implement padding offset so don't have to use random value 
@@ -392,14 +372,13 @@ class SettingsFrame(tk.Frame):
             self.progress = self.progress_frame.create_rectangle(self.progress_start_x, 0, self.midpoint, int(72 * SCALE) , fill=SPOT_GREEN)
             self.progress_frame.create_image(self.midpoint, (self.frame_img.height() - 1)/2, image=self.frame_img)
 
-            self.max_brightness_val = 1024 #255 on old dev environment, on rpi its 1024
+            self.max_brightness_val = 100 #255 on old dev environment, on rpi its 1024
             #i know this ist a normalized val or the correct func, bobo brain still decided to call it taht
             self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
             # print(self.current_normalized_brightness, "vs", self.progress_start_x)
             
             # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
             self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * self.current_normalized_brightness + self.progress_start_x, int(72 * SCALE))
-            app.after(2000, self.update_brightness())
             
 
 
@@ -664,63 +643,42 @@ class StartPage(tk.Frame):
         arrow.configure(background=bgColor, image=arrowImg)
         arrow.image = arrowImg
 
-        
-def slider_input(wheel_data, btn_state, last_btn, btn):
-    # nth is for in how many equal parts the range should be split up in
-    # eg nth=10, every 10th position on the wheel will be registered
-    # the clickwheel goes from 0 to 47
-    #global wheel_position, last_button, last_interaction, ACTIVATE_BRIGHTNESS_SLIDER, SLIDER_WHEEL_DATA
-    global ACTIVATE_BRIGHTNESS_SLIDER, last_interaction, last_button, app, page
-    button_state = btn_state
-    #last_button = last_btn
-    button = btn
-    position = wheel_data
-    
-    # get modulo operator to convert range 0-47 to steps of 10
-    #odulo_op = 10 / 47
-    #print(modulo_op)
-    if position % 5 == 0:
-        # highest clickwheel val can be 47, lowest 0
-        normalized_wheel_pos = position / 47
-        #scale normalized wheel pos to range 0 - 1024, then use value in system_change_brightness(val)
-        scaled_normalized_wheel_pos = normalized_wheel_pos * 1024
-        print("slider:", normalized_wheel_pos, "vs:",scaled_normalized_wheel_pos)
-        system_change_brightness(scaled_normalized_wheel_pos)
-        #render(app, page.render())
-        #render_settings(app, page.render())
-        
-        #print(app.frames)
-        frame = app.frames[SettingsFrame]
-        # check if were on brightness page
-        c = frame.update_settings(
-                {
-                    "name": "Brightness",
-                    "id": 0
-                })
 
-    if button_state == 0:
-        last_button = -1
-    elif button == last_button:
+def activate_brightness_slider(app, input, page):
+    wheel = input[2]
+    button = input[0]
+    button_state = input[1]
+    normalized_wheel = wheel / 47
+    scaled_normalized_wheel = int(normalized_wheel * 1024)
+    try:
+        print("page is:", page.curr_sett())
+        settings_info = page.curr_sett()
+        if settings_info["id"] == 0:
+            if wheel % 5 == 0:
+                frame = app.frames[SettingsFrame]
+                # this is just if on highest step of wheel
+                if scaled_normalized_wheel >= 980:
+                    scaled_normalized_wheel = 1024
+                frame.update_brightness(scaled_normalized_wheel)
+                print("UI")
+            if button == 29 and button_state == 0:
+                i = system_change_brightness(scaled_normalized_wheel)
+                print(i)
+                frame = app.frames[SettingsFrame]
+                # check if were on brightness page
+                frame.update_brightness()
+
+    except:
         pass
-    elif button == 11:
-        onBackPressed()
-        last_button = button
-        ACTIVATE_BRIGHTNESS_SLIDER = False
 
 
-    now = time.time()
-    if (now - last_interaction > SCREEN_TIMEOUT_SECONDS):
-        print("waking")
-        screen_wake()
-    last_interaction = now
-
-
-
-def processInput(app, input):
+def processInput(app, input, page):
     global wheel_position, last_button, last_interaction
     position = input[2]
     button = input[0]
     button_state = input[1]
+    
+    activate_brightness_slider(app, input, page)
 
     if button == 29 and button_state == 0:
         wheel_position = -1
@@ -918,8 +876,8 @@ def onDownPressed():
     page.nav_down()
     render(app, page.render())
 
-#init display brightness
-system_change_brightness(980)
+#init display brightness to 50%
+system_change_brightness(512)
 
 # Driver Code 
 page = RootPage(None)
@@ -940,7 +898,7 @@ def app_main_loop():
         read_sockets = select(socket_list, [], [], 0)[0]
         for socket in read_sockets:
             SLIDER_WHEEL_DATA = socket.recv(128)
-            processInput(app, SLIDER_WHEEL_DATA)
+            processInput(app, SLIDER_WHEEL_DATA, page)
         loop_count += 1
         if (loop_count >= 300):
             if (time.time() - last_interaction > SCREEN_TIMEOUT_SECONDS and screen_on):
