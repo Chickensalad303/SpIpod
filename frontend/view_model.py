@@ -9,14 +9,27 @@ MENU_RENDER_TYPE = 0
 NOW_PLAYING_RENDER = 1
 SEARCH_RENDER = 2
 SETTINGS_RENDER = 3
+CONTEXTMENU_RENDER = 4
 
 # Menu line item types
 LINE_NORMAL = 0
 LINE_HIGHLIGHT = 1
 LINE_TITLE = 2
 
-spotify_manager.refresh_devices()
-#spotify_manager.refresh_data()
+SPOTIPY_ERROR = None
+try:
+    spotify_manager.refresh_devices()
+    #spotify_manager.refresh_data()
+except Exception as e:
+    print(e)
+    msg = e.error
+    if "no healthy upstream" in msg.strip():
+        print("this error is commonly caused due to spotify's servers being down (or smth similair)")
+        # now run class to show error message in the gui
+        SPOTIPY_ERROR = msg
+    else:
+        print("spotipy api error occured:\n", msg)
+        SPOTIPY_ERROR = msg
 
 
 class LineItem():
@@ -404,6 +417,95 @@ class SettingsRendering(Rendering):
         self.callback = None
         self.app = None
 
+
+class ContextMenuPage(MenuPage):
+    def __init__(self, previous_page):
+        super().__init__(self.get_title(), previous_page, has_sub_page=True)
+        self.menu_options = self.get_content()
+        self.num_options = len(self.settings)
+
+    def get_title(self):
+        return "[temp]ContextMenu"
+    
+    def get_content(self):
+        return [
+                {
+                    "name": "Add to playlist",
+                    "id": 0
+                },
+                {
+                    "name": "Add to queue",
+                    "id":1
+                },
+                {
+                    "name": "View album",
+                    "id":2
+                },
+                {
+                    "name": "View artist",
+                    "id":3
+                },
+                {
+                    "name":"Other",
+                    "id":4
+                }
+            ]
+            
+
+    def total_size(self):
+        return self.num_options
+    
+    def page_at(self, index):
+        # print("index",index)
+        #command = None
+        return SingleContextMenuOption(self.menu_options[index], self) #command=command
+
+class SingleContextMenuOption(MenuPage):
+    def __init__(self, option, previous_page):
+        super().__init__(option["name"], previous_page, has_sub_page=False)
+        self.current_option = option
+        self.current_option_name = self.current_option["name"]
+        self.current_option_id = self.current_option["id"]
+
+        self.live_render = SettingsRendering(item=self.current_option)
+    
+
+    def render(self):
+        # if (not self.command.has_run):
+        #     self.command.run()
+        return self.live_render
+
+class ContextMenuRendering(Rendering):
+    def __init__(self, item):
+        super().__init__(CONTEXTMENU_RENDER)
+        self.callback = None
+        self.after_id = None
+        self.current_page = item
+        # print(self.current_page)
+
+    def subscribe(self, app, callback):
+        if callback == self.callback:
+            return
+        new_callback = self.callback is None
+        self.callback = callback
+        self.app = app
+        if new_callback:
+            self.refresh()
+
+    def refresh(self):
+        if not self.callback:
+           return
+        if self.current_page:
+            self.callback(self.current_page)
+        #if self.after_id:
+        #    self.app.after_cancel(self.after_id)
+        # self.callback(spotify_manager.DATASTORE.now_playing)
+        # self.after_id = self.app.after(500, lambda: self.refresh())
+
+    def unsubscribe(self):
+        super().unsubscribe()
+        self.callback = None
+        self.app = None
 
 
 

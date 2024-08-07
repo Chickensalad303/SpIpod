@@ -43,6 +43,8 @@ NEXT_KEY_CODE = 3080238 if platform == "darwin" else 0
 PLAY_KEY_CODE = 3211296 if platform == "darwin" else 36
 QUIT_KEY_CODE = 0 if platform == "darwin" else 22
 
+TAB_TEST_KEY_CODE = 23 #the tab key
+
 SCREEN_TIMEOUT_SECONDS = 60
 
 wheel_position = -1
@@ -578,9 +580,9 @@ class StartPage(tk.Frame):
         contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief='ridge')
         contentFrame.grid(row = 2, column = 0, sticky ="nswe")
         self.grid_rowconfigure(2, weight=1)
-        listFrame = tk.Canvas(contentFrame)
-        listFrame.configure(bg=SPOT_BLACK, bd=0, highlightthickness=0)
-        listFrame.grid(row=0, column=0, sticky="nsew")
+        self.listframe = tk.Canvas(contentFrame)
+        self.listframe.configure(bg=SPOT_BLACK, bd=0, highlightthickness=0)
+        self.listframe.grid(row=0, column=0, sticky="nsew")
         contentFrame.grid_rowconfigure(0, weight=1)
         contentFrame.grid_columnconfigure(0, weight=1)
 
@@ -596,16 +598,33 @@ class StartPage(tk.Frame):
         #x = 1 # x is set to 1, to skip the firs entry into RootPage inside view_model.py, this is skipped so that now playing is at the top
         # range(7) aka 0-6 refers to: artists, albums, new releases, podcasts, playlists, search and my added settings page. The now playing page is added dynamically
         for x in range(6):
-            item = tk.Label(listFrame, text =" " + str(x), justify=tk.LEFT, anchor="w", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN, padx=(30 * SCALE))
-            imgLabel = tk.Label(listFrame, image=self.green_arrow_image, background=SPOT_BLACK)
+            item = tk.Label(self.listframe, text =" " + str(x), justify=tk.LEFT, anchor="w", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN, padx=(30 * SCALE))
+            imgLabel = tk.Label(self.listframe, image=self.green_arrow_image, background=SPOT_BLACK)
             imgLabel.image = self.green_arrow_image
             imgLabel.grid(row=x, column=1, sticky="nsw", padx = (0, 30))
             item.grid(row = x, column = 0, sticky="ew",padx = (10, 0))
             self.listItems.append(item)
             self.arrows.append(imgLabel)
-        listFrame.grid_columnconfigure(0, weight=1)
-        # listFrame.grid_columnconfigure(1, weight=1)
-    
+        self.listframe.grid_columnconfigure(0, weight=1)
+        # self.listframe.grid_columnconfigure(1, weight=1)
+        self.uncalled = True
+
+    def show_error(self, msg_one, msg_two):
+        # for i in self.listItems:
+        #     i.destroy()
+        # for o in self.arrows:
+        #     o.destroy()
+        if self.uncalled == True:
+            [i.destroy() for i in self.listItems] #the same as above comment
+            [o.destroy() for o in self.arrows]
+            # print(msg_one, "\n", msg_two)
+            self.hide_scroll()
+            self.header_label.configure(text="¯\_(ツ)_/¯")
+            self.its = tk.Label(self.listframe, text =msg_one, justify=tk.CENTER, font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+            self.its.grid(sticky='we', column=0, row=0, padx=(0, 10))
+            self.it = Marquee(self.listframe, text =msg_two) 
+            self.it.grid(sticky='we', column=0, row=1, padx=(0, 10))
+            self.uncalled = False
 
     def show_scroll(self, index, total_count):
         scroll_bar_y_rel_size = max(0.9 - (total_count - MENU_PAGE_SIZE) * 0.06, 0.03)
@@ -756,6 +775,9 @@ def onKeyPress(event):
         onPlayPressed()
     elif (c == QUIT_KEY_CODE):
         onQuitPressed()
+
+    elif (c == TAB_TEST_KEY_CODE):
+        onContextmenuPressed()
     else:
         print("unrecognized key: ", c)
 
@@ -782,32 +804,21 @@ def update_settings(setting):
     sett_id = setting["id"]
     frame.update_settings(setting)
     
-    # print("update settings callback:", c)
-    #if sett_id == 0:
-    #    page.render().subscribe(app, update_settings)
-    #    app.show_frame(SettingsFrame)
-    #    page = SingleSettingPage(setting, page)
-    #    render(app, page.render())
-        # time.sleep(5)
-
 
 def render_settings(app, settings_render):
     app.show_frame(SettingsFrame)
     settings_render.subscribe(app, update_settings)
 
-# def update_settings(settings):
-#     frame = app.frames[SettingsFrame]
-#     frame.update_settings(settings)
 
-#def render_settings(app, settings_render):
-#    app.show_frame(SettingsFrame)
-    # settings_render.subscribe(app, update_settings
-#    frame = app.frames[SettingsFrame]
-#    frame.render()    
 
 def render_menu(app, menu_render):
     app.show_frame(StartPage)
     page = app.frames[StartPage]
+    if (SPOTIPY_ERROR != None):
+        # formatting a lil wieard but it work
+        page.show_error(f"Recieved error:\n'{SPOTIPY_ERROR}'",
+            "\nUpstream errors are commonly caused by spotify's servers being down (or smth similair). In those cases theres nothing you can do, wait till spotify fixes their stuff")
+        return
     if(menu_render.total_count > MENU_PAGE_SIZE):
         page.show_scroll(menu_render.page_start, menu_render.total_count)
     else:
@@ -875,6 +886,10 @@ def onDownPressed():
     global page, app
     page.nav_down()
     render(app, page.render())
+
+
+def onContextmenuPressed():
+    global page, app
 
 #init display brightness to 50%
 system_change_brightness(512)
