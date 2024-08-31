@@ -19,7 +19,7 @@ LINE_TITLE = 2
 SPOTIPY_ERROR = None
 try:
     spotify_manager.refresh_devices()
-    #spotify_manager.refresh_data()
+    # spotify_manager.refresh_data()
 except Exception as e:
     print(e)
     msg = e.error
@@ -46,7 +46,7 @@ class Rendering():
         pass
 
 class MenuRendering(Rendering):
-    def __init__(self, header = "", lines = [], page_start = 0, total_count = 0):
+    def __init__(self, header = "", lines = [], page_start = 0, total_count = 0, checkbox=False):
         super().__init__(MENU_RENDER_TYPE)
         self.lines = lines
         self.header = header
@@ -54,34 +54,9 @@ class MenuRendering(Rendering):
         self.total_count = total_count
         self.now_playing = spotify_manager.DATASTORE.now_playing
         self.has_internet = spotify_manager.has_internet
+        
+        self.checkbox = checkbox
 
-#lass SettingsRendering(Rendering):
-#   def __init__(self):
-#       super().__init__(SETTINGS_RENDER)
-#       self.callback = None
-#       self.after_id = None
-
-        # def subscribe(self, app, callback):
-        #     if callback == self.callback:
-        #         return
-        #     new_callback = self.callback is None
-        #     self.callback = callback
-        #     self.app = app
-        #     if new_callback:
-        #         self.refresh()
-
-        # def refresh(self):
-        #     if not self.callback:
-        #         return
-        #     if self.after_id:
-        #         self.app.after_cancel(self.after_id)
-        #     self.callback = None
-        #     self.after_id = self.app.after(500, lambda: self.refresh())
-
-        # def unsubscribe(self):
-        #     super().unsubscribe()
-        #     self.callback = None
-        #     self.app = None
 
 class NowPlayingRendering(Rendering):
     def __init__(self):
@@ -212,7 +187,15 @@ class NowPlayingPage():
         self.header = header
         self.live_render = NowPlayingRendering()
         self.is_title = False
-
+        
+    
+    # this makes it so contextmenu can be openened when nowplayingpage is open
+    def nav_context(self):
+        playing = spotify_manager.DATASTORE.now_playing
+        track = spotify_manager.UserTrack(playing["name"], playing["artist"], playing["album"], playing["track_uri"])
+        
+        return ContextMenuPage(self, track)
+    
     def play_previous(self):
         spotify_manager.play_previous()
         self.live_render.refresh()
@@ -253,13 +236,22 @@ class NowPlayingPage():
 
 EMPTY_LINE_ITEM = LineItem()
 class MenuPage():
-    def __init__(self, header, previous_page, has_sub_page, is_title = False):
+    def __init__(self, header, previous_page, has_sub_page, is_title = False, checkbox=False):
         self.index = 0
         self.page_start = 0
         self.header = header
         self.has_sub_page = has_sub_page
         self.previous_page = previous_page
         self.is_title = is_title
+    
+        self.checkbox = checkbox
+
+    def switch_page(self, destination, *args):
+        if args:
+            # print("args",args, "unpacked:", *(args))
+            return destination(self.previous_page, *(args))
+        return destination(self.previous_page)
+
 
     def total_size(self):
         return 0
@@ -320,7 +312,124 @@ class MenuPage():
                     lines.append(LineItem(page.header, line_type, page.has_sub_page))
             else:
                 lines.append(EMPTY_LINE_ITEM)
-        return MenuRendering(lines=lines, header=self.header, page_start=self.index, total_count=total_size)
+        return MenuRendering(lines=lines, header=self.header, page_start=self.index, total_count=total_size, checkbox=self.checkbox)
+
+
+def get_menu_options_for(data) -> list:
+    if data is None:
+        return []
+    universal_options = [
+        {
+            "name": "Add to playlist",
+            "id": 0
+        },
+        {
+            "name": "Add to queue",
+            "id": 1
+        },
+        {
+            "name": "View artist",
+            "id": 2
+        },
+        # {
+        #     "name": "Other",
+        #     "id":4
+        # }
+    ]
+
+    if isinstance(data, spotify_manager.UserAlbum):
+        # universal_options.append({
+        #     "name": "View album",
+        #     "id": len(universal_options)
+        # })
+        universal_options.append({
+            "name": "Add to library",
+            "id": len(universal_options)
+        })
+
+    elif isinstance(data, spotify_manager.UserTrack):
+        universal_options.append({
+            "name": "View album",
+            "id": len(universal_options)
+        })
+    
+    print(len(universal_options), "asas")
+    return universal_options
+
+class ContextMenuPage(MenuPage):
+    def __init__(self, previous_page, spot_data=None):
+        super().__init__(self.get_title(spot_data), previous_page, has_sub_page=True)
+
+        if spot_data is None:
+            return
+        print("menupage")
+        self.spot_data = spot_data
+        print(f"{spot_data}\n{spot_data.uri}\n{type(spot_data)}")
+
+        self.context_options = self.get_content()
+        self.num_context_options = len(self.context_options)
+        # print(self.context_options)
+
+    def get_title(self, data):
+        return f"{data}"
+
+    def get_content(self):
+        return get_menu_options_for(self.spot_data)
+
+
+    def total_size(self):
+        return self.num_context_options
+
+    def page_at(self, index, spot_data=None):
+        # self.spot_data = None
+        # if spot_data:
+        #     self.spot_data = spot_data
+        return SingleContextPage(self.context_options[index], self.spot_data, self)
+
+
+
+class SingleContextPage(MenuPage):
+    def __init__(self, context, spot_data, previous_page):
+        super().__init__(context["name"], previous_page, has_sub_page=False)
+        self.current_context = context
+        self.current_context_name = self.current_context["name"]
+        self.current_context_id = self.current_context["id"]
+    
+        self.live_render = ContextMenuRendering(item=self.current_context, data=spot_data)
+    def render(self):
+        # if (not self.command.has_run):
+            # self.command.run()
+        return self.live_render
+
+
+class ContextMenuRendering(Rendering):
+    def __init__(self, item, data):
+        super().__init__(CONTEXTMENU_RENDER)
+        self.callback = None
+        self.after_id = None
+        self.current_page = item
+        self.spot_data = data
+
+    def subscribe(self, app, callback):
+        if callback == self.callback:
+            return
+        new_callback = self.callback is None
+        self.callback = callback
+        self.app = app
+        if new_callback:
+            self.refresh()
+    
+    def refresh(self):
+        if not self.callback:
+            return
+        if self.current_page:
+            self.callback(self.current_page, self.spot_data)
+
+    def unsubscribe(self):
+        super().unsubscribe()
+        self.callback = None
+        self.app = None
+
 
 class SettingsPage(MenuPage):
     def __init__(self, previous_page):
@@ -355,28 +464,23 @@ class SettingsPage(MenuPage):
                 }
             ]
             
-
     def total_size(self):
         return self.num_settings
     
     def page_at(self, index):
-        # print("index",index)
         #command = None
         return SingleSettingPage(self.settings[index], self) #command=command
 
 
 class SingleSettingPage(MenuPage):
-    def __init__(self, setting, previous_page, command=None):
-        # self.command = command
+    def __init__(self, setting, previous_page): #command=None
         super().__init__(setting["name"], previous_page, has_sub_page=False)
         self.current_setting = setting
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
-        # print(self.current_setting, "asyy")
+
         self.live_render = SettingsRendering(item=self.current_setting)
-    
-    def curr_sett(self):
-        return self.current_setting
+
     def render(self):
         # if (not self.command.has_run):
         #     self.command.run()
@@ -388,96 +492,6 @@ class SingleSettingPage(MenuPage):
 class SettingsRendering(Rendering):
     def __init__(self, item):
         super().__init__(SETTINGS_RENDER)
-        self.callback = None
-        self.after_id = None
-        self.current_page = item
-        # print(self.current_page)
-
-    def subscribe(self, app, callback):
-        if callback == self.callback:
-            return
-        new_callback = self.callback is None
-        self.callback = callback
-        self.app = app
-        if new_callback:
-            self.refresh()
-
-    def refresh(self):
-        if not self.callback:
-           return
-        if self.current_page:
-            self.callback(self.current_page)
-        #if self.after_id:
-        #    self.app.after_cancel(self.after_id)
-        # self.callback(spotify_manager.DATASTORE.now_playing)
-        # self.after_id = self.app.after(500, lambda: self.refresh())
-
-    def unsubscribe(self):
-        super().unsubscribe()
-        self.callback = None
-        self.app = None
-
-
-class ContextMenuPage(MenuPage):
-    def __init__(self, previous_page):
-        super().__init__(self.get_title(), previous_page, has_sub_page=True)
-        self.menu_options = self.get_content()
-        self.num_options = len(self.settings)
-
-    def get_title(self):
-        return "[temp]ContextMenu"
-    
-    def get_content(self):
-        return [
-                {
-                    "name": "Add to playlist",
-                    "id": 0
-                },
-                {
-                    "name": "Add to queue",
-                    "id":1
-                },
-                {
-                    "name": "View album",
-                    "id":2
-                },
-                {
-                    "name": "View artist",
-                    "id":3
-                },
-                {
-                    "name":"Other",
-                    "id":4
-                }
-            ]
-            
-
-    def total_size(self):
-        return self.num_options
-    
-    def page_at(self, index):
-        # print("index",index)
-        #command = None
-        return SingleContextMenuOption(self.menu_options[index], self) #command=command
-
-class SingleContextMenuOption(MenuPage):
-    def __init__(self, option, previous_page):
-        super().__init__(option["name"], previous_page, has_sub_page=False)
-        self.current_option = option
-        self.current_option_name = self.current_option["name"]
-        self.current_option_id = self.current_option["id"]
-
-        self.live_render = SettingsRendering(item=self.current_option)
-    
-
-    def render(self):
-        # if (not self.command.has_run):
-        #     self.command.run()
-        return self.live_render
-
-class ContextMenuRendering(Rendering):
-    def __init__(self, item):
-        super().__init__(CONTEXTMENU_RENDER)
         self.callback = None
         self.after_id = None
         self.current_page = item
@@ -529,13 +543,23 @@ class ShowsPage(MenuPage):
         return SingleShowPage(self.shows[index], self)
 
 class PlaylistsPage(MenuPage):
-    def __init__(self, previous_page):
+    def __init__(self, previous_page, checkbox=False, tracks_to_add=[]):
         super().__init__(self.get_title(), previous_page, has_sub_page=True)
         self.playlists = self.get_content()
         self.num_playlists = len(self.playlists)
-                
+        
         self.playlists.sort(key=self.get_idx) # sort playlists to keep order as arranged in Spotify library
-
+        
+        self.tracks_to_add = []
+        if checkbox == True:
+            self.checkbox = True
+            self.tracks_to_add = tracks_to_add
+        
+    # this makes it so contextmenu can be openened when this is open
+    def nav_context(self):
+        print(self.index)
+        return ContextMenuPage(self, self.playlists[self.index])
+    
     def get_title(self):
         return "Playlists"
 
@@ -553,7 +577,7 @@ class PlaylistsPage(MenuPage):
 
     @lru_cache(maxsize=15)
     def page_at(self, index):
-        return SinglePlaylistPage(self.playlists[index], self)
+        return SinglePlaylistPage(self, self.playlists[index], tracks_to_add=self.tracks_to_add)
 
 class AlbumsPage(PlaylistsPage):
     def __init__(self, previous_page):
@@ -640,7 +664,7 @@ class SingleArtistPage(MenuPage):
         super().__init__(artistName, previous_page, has_sub_page=True)
 
 class SinglePlaylistPage(MenuPage):
-    def __init__(self, playlist, previous_page):
+    def __init__(self, previous_page, playlist, tracks_to_add=[]):
         # Credit for code to remove emoticons from string: https://stackoverflow.com/a/49986645
         regex_pattern = re.compile(pattern = "["
             u"\U0001F600-\U0001F64F"  # emoticons
@@ -652,6 +676,12 @@ class SinglePlaylistPage(MenuPage):
         super().__init__(regex_pattern.sub(r'',playlist.name), previous_page, has_sub_page=True)
         self.playlist = playlist
         self.tracks = None
+        self.tracks_to_add = tracks_to_add
+        self.repeat = True
+
+    # this makes it so contextmenu can be openened when this is open
+    def nav_context(self):
+        return ContextMenuPage(self, self.tracks[self.index])
 
     def get_tracks(self):
         if self.tracks is None:
@@ -659,9 +689,21 @@ class SinglePlaylistPage(MenuPage):
         return self.tracks
 
     def total_size(self):
+        if self.tracks:
+            return len(self.tracks)
         return self.playlist.track_count
 
     def page_at(self, index):
+        # print(self.playlist.uri, "&", self.repeat, len(self.tracks_to_add))
+        if self.repeat == True and len(self.tracks_to_add) > 0:
+            # add new tracks to playlist on spotifys servers
+            spotify_manager.add_to_playlist(self.playlist.uri, self.tracks_to_add)
+            # now sync that same playlist to get all tracks from servers
+            syncd_tracks = spotify_manager.get_playlist_tracks(self.playlist.uri)
+            self.playlist = spotify_manager.UserPlaylist(self.playlist.name, self.playlist.idx, self.playlist.uri, len(syncd_tracks))
+            spotify_manager.DATASTORE.setPlaylist(self.playlist, syncd_tracks)
+            
+            self.repeat = False
         track = self.get_tracks()[index]
         command = NowPlayingCommand(lambda: spotify_manager.play_from_playlist(self.playlist.uri, track.uri, None))
         return NowPlayingPage(self, track.title, command)

@@ -13,6 +13,8 @@ clientID = os.getenv("clientID")
 clientSecret = os.getenv("clientSecret")
 redirectURI = os.getenv("redirectURI")
 
+def add_to_playlist(playlist_id, items, position=None):
+    sp.playlist_add_items(playlist_id, items, position)
 
 class UserDevice():
     __slots__ = ['id', 'name', 'is_active']
@@ -215,15 +217,24 @@ def get_playlist_tracks(id):
 
 def get_album_tracks(id):
     tracks = []
-    results = sp.playlist_tracks(id, limit=pageSize)
+    results = sp.album_tracks(id, limit=pageSize)
+    album_name = sp.album(id)["name"]
     while(results['next']):
         for _, item in enumerate(results['items']):
-            track = item['track']
-            tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
+            # track = item['track']
+            if item is None:
+                #print("track is none, continuing")
+                continue
+            else:
+                tracks.append(UserTrack(item['name'], item['artists'][0]['name'], album_name, item['uri']))
         results = sp.next(results)
     for _, item in enumerate(results['items']):
-        track = item['track']
-        tracks.append(UserTrack(track['name'], track['artists'][0]['name'], track['album']['name'], track['uri']))
+        # track = item['track']
+        if item is None:
+            #print("track is none again, continue")
+            continue
+        else:
+            tracks.append(UserTrack(item['name'], item['artists'][0]['name'], album_name, item['uri']))
     return tracks
 
 def refresh_devices():

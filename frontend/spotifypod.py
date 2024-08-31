@@ -2,7 +2,7 @@
 # This is me learning Python as I go.
 # This is not how I write code for my day job.
 
-import tkinter as tk 
+import tkinter as tk
 import socket
 import json
 import time
@@ -22,8 +22,8 @@ BACKLIGHT_PIN = 18
 ACTIVATE_BRIGHTNESS_SLIDER = False
 SLIDER_WHEEL_DATA = None
 
-LARGEFONT =("ChicagoFLF", 90) 
-MED_FONT =("ChicagoFLF", 70) 
+LARGEFONT =("ChicagoFLF", 90)
+MED_FONT =("ChicagoFLF", 70)
 SCALE = 1
 SPOT_GREEN = "#1DB954"
 SPOT_BLACK = "#191414"
@@ -60,11 +60,11 @@ def is_rpi():
 if is_rpi() == True:
     import pigpio
 
-#useful for debugging, like for when using vncviewer  
+#useful for debugging, like for when using vncviewer
 def onQuitPressed():
     global page, app
     app.destroy()
-    
+
 
 last_interaction = time.time()
 screen_on = True
@@ -88,6 +88,7 @@ def system_poweroff():
 
 def system_restart_raspotify():
     os.system("sudo systemctl enable raspotify")
+    os.system("sudo systemctl start raspotify")
     os.system("sudo systemctl restart raspotify")
     enabled = subprocess.run(["sudo", "systemctl", "is-enabled", "raspotify"], check=True, capture_output=True, text=True).stdout
     active = subprocess.run(["sudo", "systemctl", "is-active", "raspotify"], check=True, capture_output=True, text=True).stdout
@@ -108,7 +109,7 @@ def system_get_brightness():
         current_sys_brightness = pigpi.get_PWM_dutycycle(BACKLIGHT_PIN)
         pigpi.stop()
         return int(current_sys_brightness)
-    
+
 def system_change_brightness(new_val):
     #here brightness values between 25 - 1024 according to docs, but in test 0-1024 worked too, so idk just assume the range 0-1024
     if is_rpi():
@@ -130,7 +131,7 @@ def system_change_brightness(new_val):
 def flattenAlpha(img):
     global SCALE
     [img_w, img_h] = img.size
-    #Image.ANTIALIAS replaced by Image.Resampling.LANCZOS in pillow =< 10.0.0 
+    #Image.ANTIALIAS replaced by Image.Resampling.LANCZOS in pillow =< 10.0.0
     img = img.resize((int(img_w * SCALE), int(img_h * SCALE)), Image.ANTIALIAS)
 
 
@@ -155,13 +156,13 @@ def flattenAlpha(img):
     img.putalpha(mask)
 
     return img
-   
-class tkinterApp(tk.Tk): 
-      
-    # __init__ function for class tkinterApp  
-    def __init__(self, *args, **kwargs):  
+
+class tkinterApp(tk.Tk):
+
+    # __init__ function for class tkinterApp
+    def __init__(self, *args, **kwargs):
         global LARGEFONT, MED_FONT, SCALE
-        # __init__ function for class Tk 
+        # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
 
         # Darwin is macos btw
@@ -177,36 +178,36 @@ class tkinterApp(tk.Tk):
         # 72 & 52
         LARGEFONT =("ChicagoFLF", int(72 * SCALE))
         MED_FONT =("ChicagoFLF", int(52 * SCALE))
-        # creating a container 
-        container = tk.Frame(self)   
-        container.pack(side = "top", fill = "both", expand = True)  
-   
-        container.grid_rowconfigure(0, weight = 1) 
-        container.grid_columnconfigure(0, weight = 1) 
-   
-        # initializing frames to an empty array 
-        self.frames = {}   
-   
-        # iterating through a tuple consisting 
-        # of the different page layouts 
-        for F in (StartPage, NowPlayingFrame, SearchFrame, SettingsFrame): #SettingsFrame
-   
-            frame = F(container, self) 
-   
-            # initializing frame of that object from 
-            # startpage, page1, page2 respectively with  
-            # for loop 
-            self.frames[F] = frame  
-   
-            frame.grid(row = 0, column = 0, sticky ="nsew") 
-   
-        self.show_frame(StartPage) 
-   
-    # to display the current frame passed as 
-    # parameter 
-    def show_frame(self, cont): 
-        frame = self.frames[cont] 
-        frame.tkraise() 
+        # creating a container
+        container = tk.Frame(self)
+        container.pack(side = "top", fill = "both", expand = True)
+
+        container.grid_rowconfigure(0, weight = 1)
+        container.grid_columnconfigure(0, weight = 1)
+
+        # initializing frames to an empty array
+        self.frames = {}
+
+        # iterating through a tuple consisting
+        # of the different page layouts
+        for F in (StartPage, NowPlayingFrame, SearchFrame, SettingsFrame, ContextMenuFrame): #SettingsFrame
+
+            frame = F(container, self)
+
+            # initializing frame of that object from
+            # startpage, page1, page2 respectively with
+            # for loop
+            self.frames[F] = frame
+
+            frame.grid(row = 0, column = 0, sticky ="nsew")
+
+        self.show_frame(StartPage)
+
+    # to display the current frame passed as
+    # parameter
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
 # pass font arg, defaults to LARGEFONT
 class Marquee(tk.Canvas):
@@ -226,7 +227,7 @@ class Marquee(tk.Canvas):
         self.borderwidth = borderwidth
         # start by drawing the text off screen, then asking the canvas
         # how much space we need. Use that to compute the initial size
-        # of the canvas. 
+        # of the canvas.
         self.saved_text = text
         self.text = self.create_text(0, -1000, text=text, font=currentFont, fill=SPOT_GREEN, anchor="w", tags=("text",))
         (x0, y0, x1, y1) = self.bbox("text")
@@ -264,7 +265,7 @@ class Marquee(tk.Canvas):
             pass
         elif self.width < win_width:
             self.coords("text", (win_width / 2) - (self.width / 2), self.winfo_height()/2)
-            return 
+            return
         elif x1 < 0 or y0 < 0 or self.reset:
             self.reset = False
             self.animating = True
@@ -277,12 +278,12 @@ class Marquee(tk.Canvas):
         else:
             self.move("text", -2, 0)
         self.after_id = self.after(int(1000/self.fps), self.redraw)
-   
-class SearchFrame(tk.Frame): 
-    def __init__(self, parent, controller):  
-        tk.Frame.__init__(self, parent) 
+
+class SearchFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
         self.configure(bg=SPOT_BLACK)
-        self.header_label = tk.Label(self, text ="Search", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.header_label = tk.Label(self, text ="Search", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.header_label.grid(sticky='we', padx=(0, 10))
         self.grid_columnconfigure(0, weight=1)
         divider = tk.Canvas(self)
@@ -290,15 +291,15 @@ class SearchFrame(tk.Frame):
         divider.grid(row = 1, column = 0, sticky ="we", pady=(10, int(160 * SCALE)), padx=(10, 30))
         contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief='ridge')
         contentFrame.grid(row = 2, column = 0, sticky ="nswe")
-        self.query_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
-        self.letter_label= tk.Label(contentFrame, text ="a", font = LARGEFONT, background=SPOT_GREEN, foreground=SPOT_BLACK) 
+        self.query_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
+        self.letter_label= tk.Label(contentFrame, text ="a", font = LARGEFONT, background=SPOT_GREEN, foreground=SPOT_BLACK)
         self.query_label.grid(row = 0, column = 0, sticky = "nsw", padx=(120,0))
         self.letter_label.grid(row = 0, column = 1, sticky = "nsw")
         contentFrame.grid_columnconfigure(1, weight=1)
         search_line = tk.Canvas(self)
         search_line.configure(bg=SPOT_GREEN, height=5, bd=0, highlightthickness=0, relief='ridge')
         search_line.grid(row = 3, column = 0, sticky ="we", pady=10, padx=120)
-        self.loading_label = tk.Label(self, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_WHITE) 
+        self.loading_label = tk.Label(self, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_WHITE)
         self.loading_label.grid(row = 4, column = 0, sticky ="we", pady=(int(100 * SCALE), 0))
 
     def update_search(self, query, active_char, loading):
@@ -306,6 +307,59 @@ class SearchFrame(tk.Frame):
         self.letter_label.configure(text=active_char)
         loading_text = "Loading..." if loading else ""
         self.loading_label.configure(text=loading_text)
+
+class ContextMenuFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.spot_data = None
+        self.current_context = None
+
+        self.configure(bg=SPOT_BLACK)
+        self.grid_columnconfigure(0, weight=1)
+
+        divider = tk.Canvas(self)
+        divider.configure(bg=SPOT_GREEN, height=DIVIDER_HEIGHT, bd=0, highlightthickness=0, relief="ridge")
+        divider.grid(row = 2, column=0, sticky="we", pady=(10, int(160 * SCALE)), padx=(10, 30))
+
+        contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
+        contentFrame.grid(row=1, column=0, sticky="nswe")
+        contentFrame.grid_columnconfigure(0, weight=1)
+        # self.header_label = tk.Label(self, text="nan", font=LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
+        self.header_label = Marquee(contentFrame, text="Non", fontOffset=0)
+        self.header_label.grid(sticky="we", padx=(0, 10))
+    
+
+    def update_context(self, updated_info, spot_data):
+        global page, app
+        # print("new info", updated_info, "and", spot_data)
+        self.current_context = updated_info
+        self.current_context_name = self.current_context["name"]
+        self.current_context_id = self.current_context["id"]
+        self.header_label.set_text(self.current_context_name)
+        self.spot_data = spot_data
+
+        # id == 0 is always add smthng to playlist
+        if self.current_context_id == 0:
+            print("run add to playlist func, datatype:", type(self.spot_data))
+            
+            self.track_uris = []
+            if isinstance(self.spot_data, spotify_manager.UserAlbum):
+                self.album_uri = self.spot_data.uri.split(":")[-1]
+                spotify_manager.get_album_tracks(self.album_uri)
+                
+                self.album_uri_tracks = spotify_manager.get_album_tracks(self.album_uri)
+
+                for i in self.album_uri_tracks:
+                    self.track_uris.append(i.uri)
+            elif isinstance(self.spot_data, spotify_manager.UserTrack):
+                print("add track to playlist")
+                self.track_uris.append(self.spot_data.uri)
+
+            # pass the params of the class as extra params
+            page = page.switch_page(PlaylistsPage, True, self.track_uris)
+            
+            # print(page, "as")
+
 
 class SettingsFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -321,14 +375,14 @@ class SettingsFrame(tk.Frame):
 
         contentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
         contentFrame.grid(row=1, column=0, sticky="nswe")
-        contentFrame.grid_columnconfigure(0, weight=1)        
+        contentFrame.grid_columnconfigure(0, weight=1)
         # self.header_label = tk.Label(self, text="nan", font=LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.header_label = Marquee(contentFrame, text="Non", fontOffset=0)
         self.header_label.grid(sticky="we", padx=(0, 10))
 
         mainContentFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
         mainContentFrame.grid(row=3, column=0, sticky="nswe")
-        mainContentFrame.grid_columnconfigure(0, weight=1) 
+        mainContentFrame.grid_columnconfigure(0, weight=1)
         self.main_label = Marquee(mainContentFrame, text="No Text", fontOffset=0)
         self.main_label.grid(sticky="we", padx=(0, 10))
         self.main_label2 = Marquee(mainContentFrame, text="No Text", fontOffset=0)
@@ -337,14 +391,14 @@ class SettingsFrame(tk.Frame):
 
         self.brightnessFrame = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief="ridge")
         self.brightnessFrame.grid(row=4, column=0, sticky="nswe")
-        self.brightnessFrame.grid_columnconfigure(0, weight=1) 
+        self.brightnessFrame.grid_columnconfigure(0, weight=1)
 
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
         self.update()
         self.padding_offset = (self.frame_img.width() - self.winfo_width()) / 2 * SCALE
         # self.padding_offset = 25 for this offset im just tryign random shit
         self.padding_offset = (self.winfo_reqwidth() - self.frame_img.width()) / 1.5 * SCALE
-        
+
         print(self.padding_offset, "\n", self.winfo_reqwidth(), self.frame_img.width())
 
 
@@ -352,7 +406,7 @@ class SettingsFrame(tk.Frame):
         parent_width = self.winfo_width()
         if parent_width > 2:
             # this is straight up copied from NowPlayingFrame, just made interactive
-            self.progress_frame = tk.Canvas(self.brightnessFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)        
+            self.progress_frame = tk.Canvas(self.brightnessFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
             self.progress_frame.grid(row=4, column=0, sticky="wens", pady=(int(52 * SCALE), 0), padx=(self.padding_offset, 0))
 
             if ui_only_brightness != None:
@@ -364,8 +418,8 @@ class SettingsFrame(tk.Frame):
 
             self.main_label.set_text(f"{self.current_brightness}")
             self.main_label2.set_text("")
-            # somehow implement padding offset so don't have to use random value 
-            # (for my display/ui setup doing -30.5 makes the playback bar work but 
+            # somehow implement padding offset so don't have to use random value
+            # (for my display/ui setup doing -30.5 makes the playback bar work but
             # its stoopid)
             self.midpoint = self.frame_img.width() / 2
             # print("this is midpoint of playback bar", self.midpoint)
@@ -378,33 +432,26 @@ class SettingsFrame(tk.Frame):
             #i know this ist a normalized val or the correct func, bobo brain still decided to call it taht
             self.current_normalized_brightness = min(1.0, self.current_brightness / self.max_brightness_val)
             # print(self.current_normalized_brightness, "vs", self.progress_start_x)
-            
+
             # self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * adjusted_progress_pct + self.progress_start_x, int(72 * SCALE))
             self.progress_frame.coords(self.progress, self.progress_start_x, 0, self.progress_width * self.current_normalized_brightness + self.progress_start_x, int(72 * SCALE))
-            
+                    # self.previous_page = previous_page
+        # self.header = header
+        self.is_title = False
 
 
 
     def update_settings(self, updated_info):
-        #self.callback = False
         self.current_setting = updated_info
         self.current_setting_name = self.current_setting["name"]
         self.current_setting_id = self.current_setting["id"]
-        #self.new_brightness_val = self.current_setting["brightness_val"]
+
         print(self.current_setting)
         self.header_label.set_text(self.current_setting_name)
         # print(self.current_setting)
         if self.current_setting_id == 0:
             print("set brightness")
-
-            #system_change_brightness(self.new_brightness_val)
             self.update_brightness()
-            
-            #self.callback = False
-            # global ACTIVATE_BRIGHTNESS_SLIDER
-            # ACTIVATE_BRIGHTNESS_SLIDER = True #this reroutes process_input, to now run alternative input processing func: slider_input
-            # then inside wherever input is processed, make it so when the back button is pressed, change back to False
-
 
         elif self.current_setting_id == 1:
             print("restarting raspotify")
@@ -419,23 +466,23 @@ class SettingsFrame(tk.Frame):
         elif self.current_setting_id == 3:
             print("Shutting down now")
             system_poweroff()
-            
+
         elif self.current_setting_id == 4:
             self.main_label.set_text("")
             self.main_label2.set_text("")
-        
-        #return self.callback
-            
 
 
-class NowPlayingFrame(tk.Frame): 
-    def __init__(self, parent, controller):  
-        tk.Frame.__init__(self, parent) 
+
+
+
+class NowPlayingFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
         self.inflated = False
         self.active = False
         self.update_time = False
         self.configure(bg=SPOT_BLACK)
-        self.header_label = tk.Label(self, text ="Now Playing", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.header_label = tk.Label(self, text ="Now Playing", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         # padx=(0, 10)
         self.header_label.grid(sticky='we', padx=(0, 0))
         self.grid_columnconfigure(0, weight=1)
@@ -447,29 +494,29 @@ class NowPlayingFrame(tk.Frame):
         contentFrame.grid(row = 2, column = 0, sticky ="nswe")
         contentFrame.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
-        self.context_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.context_label = tk.Label(contentFrame, text ="", font = MED_FONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.context_label.grid(row=0, column=0,sticky ="w", padx=int(50 * SCALE))
         #when changing tk.Label to Marquee make sure to change references to
         # .configure to set_text
         # e.g. for self.track_label = Marquee(contentFrame, text="")
         # use self.track_label.set_text(...)
 
-        #self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        #self.artist_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.artist_label = Marquee(contentFrame, text="", fontOffset=0)
         # padx=(10, 30)
         self.artist_label.grid(row=2, column=0,sticky ="we", padx=(10, 10))
-        
-        #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+
+        #self.album_label = tk.Label(contentFrame, text ="", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.album_label = Marquee(contentFrame, text="", fontOffset=0)
         #padx=(10, 30)
         self.album_label.grid(row=3, column=0,sticky ="we", padx=(10, 10))
-        
+
         self.track_label = Marquee(contentFrame, text="")
         #padx=(30, 50)
         self.track_label.grid(row=1, column=0,sticky ="we", padx=(30, 30))
-        
+
         self.progress_frame = tk.Canvas(contentFrame, height=int(72 * SCALE), bg=SPOT_BLACK, highlightthickness=0)
-        
+
         self.frame_img = ImageTk.PhotoImage(flattenAlpha(Image.open('prog_frame.png')))
         # padx=(30, 50)
         # padx=(30,30)
@@ -492,7 +539,7 @@ class NowPlayingFrame(tk.Frame):
         self.remaining_time.grid(row=0, column=1, sticky ="ne", padx = int(60 * SCALE))
         self.cached_album = None
         self.cached_artist = None
-        
+
     def update_now_playing(self, now_playing):
         if not self.inflated:
             parent_width = self.winfo_width()
@@ -500,9 +547,9 @@ class NowPlayingFrame(tk.Frame):
                 # - 40
                 # - 30
                 # self.midpoint = (parent_width / 2) - 30.5
-                
-                # somehow implement padding offset so don't have to use random value 
-                # (for my display/ui setup doing -30.5 makes the playback bar work but 
+
+                # somehow implement padding offset so don't have to use random value
+                # (for my display/ui setup doing -30.5 makes the playback bar work but
                 # its stoopid)
                 self.midpoint = self.frame_img.width() / 2
                 print("this is midpoint of playback bar", self.midpoint)
@@ -533,7 +580,7 @@ class NowPlayingFrame(tk.Frame):
         truncd_context = context_name if context_name else "Now Playing"
         truncd_context = truncd_context if len(truncd_context) < 20 else truncd_context[0:17] + "..."
         self.header_label.configure(text=truncd_context)
-        
+
         update_delta = 0 if not now_playing['is_playing'] else (time.time() - now_playing["timestamp"]) * 1000.0
         adjusted_progress_ms = now_playing['progress'] + update_delta
         adjusted_remaining_ms = max(0, now_playing['duration'] - adjusted_progress_ms)
@@ -551,11 +598,13 @@ class NowPlayingFrame(tk.Frame):
             return
         context_str = str(now_playing['track_index']) + " of " + str(now_playing['track_total'])
         self.context_label.configure(text=context_str)
-        
-   
-class StartPage(tk.Frame): 
-    def __init__(self, parent, controller):  
-        tk.Frame.__init__(self, parent) 
+
+
+class StartPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.black_circle_image = ImageTk.PhotoImage(flattenAlpha(Image.open("checkbox_circle2.png")))
+        self.green_circle_image = ImageTk.PhotoImage(flattenAlpha(Image.open("checkbox_circle_green.png")))
         self.green_arrow_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_arrow_grn.png')))
         self.black_arrow_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_arrow_blk.png')))
         self.empty_arrow_image = ImageTk.PhotoImage(flattenAlpha(Image.open('pod_arrow_empty.png')))
@@ -566,7 +615,7 @@ class StartPage(tk.Frame):
         self.configure(bg=SPOT_BLACK)
         header_container = tk.Canvas(self, bg=SPOT_BLACK, highlightthickness=0, relief='ridge')
         header_container.grid(sticky='we')
-        self.header_label = tk.Label(header_container, text ="sPot", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+        self.header_label = tk.Label(header_container, text ="sPot", font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
         self.header_label.grid(sticky='we', column=1, row=0, padx=(0, 10))
         self.play_indicator = tk.Label(header_container, image=self.space_image, background=SPOT_BLACK)
         self.play_indicator.grid(sticky='w', column=0, row=0, padx=(70 * SCALE,0))
@@ -586,13 +635,13 @@ class StartPage(tk.Frame):
         contentFrame.grid_rowconfigure(0, weight=1)
         contentFrame.grid_columnconfigure(0, weight=1)
 
-        # scrollbar 
+        # scrollbar
         self.scrollFrame = tk.Canvas(contentFrame)
         self.scrollFrame.configure(bg=SPOT_BLACK, width=int(50 * SCALE), bd=0, highlightthickness=4, highlightbackground=SPOT_GREEN)
         self.scrollBar = tk.Canvas(self.scrollFrame, bg=SPOT_GREEN, highlightthickness=0, width=int(20 * SCALE))
         self.scrollBar.place(in_=self.scrollFrame, relx=.5,  y=int(10 * SCALE), anchor="n", relwidth=.6, relheight=.9)
         self.scrollFrame.grid(row=0, column=1, sticky="ns", padx=(0, 30), pady=(0, 10))
-        
+
         self.listItems = []
         self.arrows=[]
         #x = 1 # x is set to 1, to skip the firs entry into RootPage inside view_model.py, this is skipped so that now playing is at the top
@@ -620,9 +669,9 @@ class StartPage(tk.Frame):
             # print(msg_one, "\n", msg_two)
             self.hide_scroll()
             self.header_label.configure(text="¯\_(ツ)_/¯")
-            self.its = tk.Label(self.listframe, text =msg_one, justify=tk.CENTER, font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN) 
+            self.its = tk.Label(self.listframe, text =msg_one, justify=tk.CENTER, font = LARGEFONT, background=SPOT_BLACK, foreground=SPOT_GREEN)
             self.its.grid(sticky='we', column=0, row=0, padx=(0, 10))
-            self.it = Marquee(self.listframe, text =msg_two) 
+            self.it = Marquee(self.listframe, text =msg_two)
             self.it.grid(sticky='we', column=0, row=1, padx=(0, 10))
             self.uncalled = False
 
@@ -633,7 +682,8 @@ class StartPage(tk.Frame):
         offset = ((1 - percentage) * (scroll_bar_y_raw_size + int(20 * SCALE))) - (scroll_bar_y_raw_size + int(10 * SCALE))
         self.scrollBar.place(in_=self.scrollFrame, relx=.5, rely=percentage, y=offset, anchor="n", relwidth=.66, relheight=scroll_bar_y_rel_size)
         self.scrollFrame.grid(row=0, column=1, sticky="ns", padx=(0, 30), pady=(0, 10))
-
+    def test(self):
+        return "test"
     def hide_scroll(self):
         self.scrollFrame.grid_forget()
 
@@ -648,7 +698,7 @@ class StartPage(tk.Frame):
         wifi_image = self.wifi_image if has_wifi else self.space_image
         self.wifi_indicator.configure(image = wifi_image)
         self.wifi_indicator.image = wifi_image
-    
+
     def set_list_item(self, index, text, line_type = LINE_NORMAL, show_arrow = False):
         bgColor = SPOT_GREEN if line_type == LINE_HIGHLIGHT else SPOT_BLACK
         txtColor = SPOT_BLACK if line_type == LINE_HIGHLIGHT else \
@@ -661,6 +711,20 @@ class StartPage(tk.Frame):
             (self.black_arrow_image if line_type == LINE_HIGHLIGHT else self.green_arrow_image)
         arrow.configure(background=bgColor, image=arrowImg)
         arrow.image = arrowImg
+    
+    def set_checkbox_item(self, index, text, line_type = LINE_NORMAL, show_checkbox=False):
+        bgColor = SPOT_GREEN if line_type == LINE_HIGHLIGHT else SPOT_BLACK
+        txtColor = SPOT_BLACK if line_type == LINE_HIGHLIGHT else \
+            (SPOT_GREEN if line_type == LINE_NORMAL else SPOT_WHITE)
+        truncd_text = text if len(text) < 17 else text[0:15] + "..."
+        self.listItems[index].configure(background=bgColor, foreground=txtColor, text=truncd_text)
+
+        checkbox = self.arrows[index]
+        checkbox.grid(row=index, column=1, sticky="nsw", padx=(0, 30))
+        checkboxImg = self.empty_arrow_image if not show_checkbox else \
+            (self.black_circle_image if line_type == LINE_HIGHLIGHT else self.green_circle_image)
+        checkbox.configure(background=bgColor, image=checkboxImg)
+        checkbox.image = checkboxImg
 
 
 def activate_brightness_slider(app, input, page):
@@ -696,7 +760,7 @@ def processInput(app, input, page):
     position = input[2]
     button = input[0]
     button_state = input[1]
-    
+
     activate_brightness_slider(app, input, page)
 
     if button == 29 and button_state == 0:
@@ -705,14 +769,14 @@ def processInput(app, input, page):
         wheel_position = position
     elif position % 2 != 0:
         pass
-    
+
     # global ACTIVATE_BRIGHTNESS_SLIDER
     # #print("slider state:", ACTIVATE_BRIGHTNESS_SLIDER)
     # if ACTIVATE_BRIGHTNESS_SLIDER == True:
     #     slider_input(position, input[1], last_button, input[0])
     #     return
 
-    
+
     elif wheel_position <=1 and position > 44:
         onDownPressed()
         wheel_position = position
@@ -727,7 +791,7 @@ def processInput(app, input, page):
     elif wheel_position < position:
         onUpPressed()
         wheel_position = position
-    
+
 
     if button_state == 0:
         last_button = -1
@@ -748,14 +812,14 @@ def processInput(app, input, page):
     elif button == 9:
         onPrevPressed()
         last_button = button
-    
+
     now = time.time()
     if (now - last_interaction > SCREEN_TIMEOUT_SECONDS):
         print("waking")
         screen_wake()
     last_interaction = now
 
-    # app.frames[StartPage].set_list_item(0, "Test") 
+    # app.frames[StartPage].set_list_item(0, "Test")
 
 def onKeyPress(event):
     c = event.keycode
@@ -803,7 +867,7 @@ def update_settings(setting):
     # check if were on brightness page
     sett_id = setting["id"]
     frame.update_settings(setting)
-    
+
 
 def render_settings(app, settings_render):
     app.show_frame(SettingsFrame)
@@ -814,6 +878,7 @@ def render_settings(app, settings_render):
 def render_menu(app, menu_render):
     app.show_frame(StartPage)
     page = app.frames[StartPage]
+    # print(menu_render)
     if (SPOTIPY_ERROR != None):
         # formatting a lil wieard but it work
         page.show_error(f"Recieved error:\n'{SPOTIPY_ERROR}'",
@@ -824,7 +889,11 @@ def render_menu(app, menu_render):
     else:
         page.hide_scroll()
     for (i, line) in enumerate(menu_render.lines):
-        page.set_list_item(i, text=line.title, line_type = line.line_type, show_arrow = line.show_arrow) 
+        # print(menu_render.checkbox, "vs", line.show_arrow)
+        if menu_render.checkbox == True:
+            page.set_checkbox_item(i, text=line.title, line_type = line.line_type, show_checkbox = menu_render.checkbox)
+        else:
+            page.set_list_item(i, text=line.title, line_type = line.line_type, show_arrow = line.show_arrow)
     page.set_header(menu_render.header, menu_render.now_playing, menu_render.has_internet)
 
 def update_now_playing(now_playing):
@@ -835,6 +904,17 @@ def render_now_playing(app, now_playing_render):
     app.show_frame(NowPlayingFrame)
     now_playing_render.subscribe(app, update_now_playing)
 
+
+def update_context(context, spot_data):
+    global app, frame
+    frame = app.frames[ContextMenuFrame]
+    frame.update_context(context, spot_data)
+
+def render_context(app, context_render):
+	app.show_frame(ContextMenuFrame)
+	context_render.subscribe(app, update_context)
+	
+
 def render(app, render):
     if (render.type == MENU_RENDER_TYPE):
         render_menu(app, render)
@@ -844,13 +924,15 @@ def render(app, render):
         render_search(app, render)
     elif (render.type == SETTINGS_RENDER):
         render_settings(app, render)
-        
+    elif (render.type == CONTEXTMENU_RENDER):
+        render_context(app, render)
+
 
 def onPlayPressed():
     global page, app
     page.nav_play()
     render(app, page.render())
-    
+
 def onSelectPressed():
     global page, app
     if (not page.has_sub_page):
@@ -866,7 +948,7 @@ def onBackPressed():
         page.render().unsubscribe()
         page = previous_page
         render(app, page.render())
-    
+
 def onNextPressed():
     global page, app
     page.nav_next()
@@ -890,13 +972,19 @@ def onDownPressed():
 
 def onContextmenuPressed():
     global page, app
+    print("contextmenuButtonPressed")
+    if page == NowPlayingPage:
+        print("NP page")
+    page = page.nav_context()
+    # print(page)
+    render(app, page.render())
 
 #init display brightness to 50%
 system_change_brightness(512)
 
-# Driver Code 
+# Driver Code
 page = RootPage(None)
-app = tkinterApp() 
+app = tkinterApp()
 render(app, page.render())
 app.overrideredirect(True)
 app.overrideredirect(False)

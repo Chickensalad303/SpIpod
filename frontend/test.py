@@ -19,11 +19,6 @@ scope = "user-follow-read," \
         "playlist-modify-private," \
         "streaming"
 
-<<<<<<< HEAD
-clientid = "ab89fb3e5529467c91a245ce5b69067c"
-clientsecret = "b123ce33e1d04bfaafeefbcad9529414"
-redirectURI = "http://localhost:8080/"
-=======
 from dotenv import load_dotenv
 import os
 
@@ -32,12 +27,12 @@ clientID = os.getenv("clientID")
 clientSecret = os.getenv("clientSecret")
 redirectURI = os.getenv("redirectURI")
 
->>>>>>> d271692d5a9383a3407fa7448905fd0e0ae01d34
 # spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
         scope=scope, 
-        client_id=clientid, client_secret=clientsecret, redirect_uri=redirectURI))
+        client_id=clientID, client_secret=clientSecret, redirect_uri=redirectURI))
 
+d = sp.devices()
 results = sp.current_user_saved_tracks(limit=50, offset=0)
-print(results)
+print(d)

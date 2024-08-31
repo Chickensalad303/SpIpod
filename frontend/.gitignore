@@ -2,3 +2,6 @@
 .cache
 .env
 .vscode
+credentials.json
+files
+volume

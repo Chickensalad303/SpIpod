@@ -193,6 +193,10 @@ install raspotify
 edit the [raspotify](https://github.com/dtcooper/raspotify) configuration to your liking (all settings listed here: https://github.com/dtcooper/raspotify/wiki/Configuration).
 \
 The most importaint labels to fill out are `LIBRESPOT_USERNAME=""` and `LIBRESPOT_PASSWORD=""` these should be your spotify username/email and password.
+\ Also, comment out the line that says `LIBRESPOT_DISABLE_AUDIO_CACHE=`.
+In addition you can also set a custom directory for your credential cache with the flag
+`Librespot_SYSTEM_CACHE=` (i set mine to `/var/cache/raspotify`) but this
+shouldn't be nescesarry for it to work
 
 \
 Also enable the raspotify service to cover the odd case, where it doesn't enable automatically: \
